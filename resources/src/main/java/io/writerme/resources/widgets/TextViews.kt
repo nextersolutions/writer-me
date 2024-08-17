@@ -1,0 +1,28 @@
+package io.writerme.resources.widgets
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import io.writerme.resources.common.Dimens.GRID_12
+import io.writerme.resources.themes.AppTheme
+
+object TextViews
+
+@Preview
+@Composable
+private fun AmountTextView_Preview() {
+    AppTheme {
+        Column(
+            modifier = Modifier
+                .background(
+                    color = Color.White
+                )
+                .padding(GRID_12)
+        ) {
+        }
+    }
+}

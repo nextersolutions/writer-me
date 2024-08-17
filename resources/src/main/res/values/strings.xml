@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">ShareMy</string>
+
+    <string name="error_input_is_empty">The field cannot be empty</string>
+    <string name="error_invalid_operation">Invalid operation</string>
+    <string name="error_phone_invalid_number">Invalid phone number</string>
+    <string name="error_phone_length_down_invalid">Please select a phone with at least 9 characters</string>
+    <string name="error_phone_length_up_invalid">Please select a phone up to 10 characters</string>
+    <string name="error_email_is_not_valid">Email is not valid</string>
+    <string name="error_password_is_not_valid">Password is not valid</string>
+    <string name="error_confirm_password_is_not_valid">Confirm password is not valid</string>
+    <string name="error_password_should_contain">Should contain at least 1 number and special character</string>
+    <string name="error_code_invalid">Wrong code, please try again</string>
+    <string name="error_card_length">Card number should 16 characters long</string>
+
+    <string name="action_login">Login</string>
+</resources>
