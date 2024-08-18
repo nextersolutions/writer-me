@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.detekt) apply true
     alias(libs.plugins.ktLint) apply true
     alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.realm) apply false
 }
 
 tasks.register<Delete>("clean") {

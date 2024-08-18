@@ -17,6 +17,7 @@ object Config {
     object Modules {
         const val core = "io.writerme.core"
         const val data = "io.writerme.data"
+        const val database = "io.writerme.database"
         const val resources = "io.writerme.resources"
         const val domain = "io.writerme.domain"
         const val network = "io.writerme.network"

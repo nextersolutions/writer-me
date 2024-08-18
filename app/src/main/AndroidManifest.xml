@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera.any" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="false"
@@ -14,14 +13,25 @@
         android:roundIcon="${appIconRound}"
         android:name=".configuration.BaseApplication"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ShareMy"
+        android:theme="@style/Theme.WriterMe"
+        android:localeConfig="@xml/locales_config"
         tools:targetApi="34">
+
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:configChanges="locale|screenLayout|uiMode"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.ShareMy"
+            android:theme="@style/Theme.WriterMe"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
