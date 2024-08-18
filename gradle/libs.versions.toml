@@ -53,6 +53,9 @@ playServicesAuth = "21.2.0"
 cloudy = "0.2.0"
 
 parse = "4.3.0"
+skrape = "1.3.0-alpha.1"
+realmPlugin = "10.15.1"
+realmKotlin = "1.10.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -133,6 +136,7 @@ parse-ktx = { module = "com.github.parse-community.Parse-SDK-Android:ktx", versi
 parse-coroutines = { module = "com.github.parse-community.Parse-SDK-Android:coroutines", version.ref = "parse" }
 
 cloudy = { module = "com.github.skydoves:cloudy", version.ref = "cloudy" }
+skrape-it = { module = "it.skrape:skrapeit", version.ref = "skrape" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "android" }
@@ -145,6 +149,7 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 navigation = { id = "androidx.navigation.safeargs", version.ref = "androidxNavigation" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 ktLint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLint" }
+realm = { id = "io.realm.kotlin", version.ref = "realmKotlin" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 

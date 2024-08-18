@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import com.sharemyinc.resources.themes.AppTheme
+import io.writerme.resources.themes.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import io.writerme.app.navigation.navigationLaunchGraph
 import ru.alexgladkov.odyssey.compose.setup.OdysseyConfiguration

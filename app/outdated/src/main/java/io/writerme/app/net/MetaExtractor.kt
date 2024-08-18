@@ -4,17 +4,6 @@ import it.skrape.core.htmlDocument
 import it.skrape.fetcher.*
 import it.skrape.selects.html5.meta
 
-data class MetaTags(
-    val ogImage: String?, //still need nullability as its possible a site has none of these tags
-    val ogTitle: String?,
-    val ogUrl: String?,
-    val ogDescription: String?,
-    val twitterImage: String?,
-    val twitterTitle: String?,
-    val twitterDescription: String?,
-    val twitterUrl: String?
-)
-
 class MetaTagScraper {
 
     protected data class TempMetaTags(
@@ -92,7 +81,7 @@ class MetaTagScraper {
             }
         }
 
-        return MetaTags(
+        return MetaTagsDto(
             tags.ogImage, tags.ogTitle, tags.ogUrl, tags.ogDescription,
             tags.twitterImage, tags.twitterTitle, tags.twitterDescription,
             tags.twitterUrl
