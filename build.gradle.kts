@@ -1,3 +1,13 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath(libs.realm.plugin)
+        classpath(libs.kotlin.gradle.plugin)
+    }
+}
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     alias(libs.plugins.androidApplication) apply false
@@ -10,7 +20,7 @@ plugins {
     alias(libs.plugins.detekt) apply true
     alias(libs.plugins.ktLint) apply true
     alias(libs.plugins.hilt) apply false
-    alias(libs.plugins.realm) apply false
+    alias(libs.plugins.realm.kotlin) apply false
 }
 
 tasks.register<Delete>("clean") {

@@ -23,6 +23,8 @@ android {
         multiDexEnabled = true
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner = Config.testInstrumentationRunner
+
+        resConfigs("en", "uk", "de", "es", "fr", "ru")
     }
 
     signingConfigs {

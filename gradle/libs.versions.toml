@@ -1,4 +1,5 @@
 [versions]
+libraryBaseVersion = "1.16.0"
 minSdk = "26"
 targetSdk = "34"
 compileSdk = "34"
@@ -54,8 +55,8 @@ cloudy = "0.2.0"
 
 parse = "4.3.0"
 skrape = "1.3.0-alpha.1"
-realmPlugin = "10.15.1"
-realmKotlin = "1.10.0"
+realmGradlePlugin = "10.17.0"
+realm = "1.16.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -105,6 +106,7 @@ firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx"
 firebase-dynamicLinks = { module = "com.google.firebase:firebase-dynamic-links" }
 firebase-commonKtx = { module = "com.google.firebase:firebase-common-ktx" }
 
+library-base = { module = "io.realm.kotlin:library-base", version.ref = "libraryBaseVersion" }
 lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycle-viewModel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 lifecycle-viewModelCompose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
@@ -138,6 +140,10 @@ parse-coroutines = { module = "com.github.parse-community.Parse-SDK-Android:coro
 cloudy = { module = "com.github.skydoves:cloudy", version.ref = "cloudy" }
 skrape-it = { module = "it.skrape:skrapeit", version.ref = "skrape" }
 
+realm-plugin = { module = "io.realm.kotlin:gradle-plugin", version.ref = "realm" }
+realm-base = { module = "io.realm.kotlin:library-base", version.ref = "realm" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "android" }
 library = { id = "com.android.library", version.ref = "android" }
@@ -149,7 +155,6 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 navigation = { id = "androidx.navigation.safeargs", version.ref = "androidxNavigation" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 ktLint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLint" }
-realm = { id = "io.realm.kotlin", version.ref = "realmKotlin" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }
-
+realm-kotlin = { id = "io.realm.kotlin", version.ref = "realm" }

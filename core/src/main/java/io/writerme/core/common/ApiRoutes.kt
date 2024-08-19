@@ -10,6 +10,7 @@ object ApiRoutes {
     private const val BASE_URL = "https://writerme.io"
     private const val BASE_URL_DEV = "https://dev.writerme.io"
     private const val BASE_URL_BETA = "https://staging.writerme.io"
+    const val TERMS_LINK = "https://writerme.io/terms"
 
     object ResponseMessages {
         const val SUCCESS = "Success"

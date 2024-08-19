@@ -1,13 +1,14 @@
-import io.writerme.app.BuildStage
 import io.writerme.app.Config
-import io.writerme.app.GradleKey
+import io.writerme.app.Dependencies
 
 plugins {
     alias(libs.plugins.library)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.realm)
+    alias(libs.plugins.realm.kotlin)
 }
+
+apply(plugin = libs.plugins.realm.kotlin.get().pluginId)
 
 android {
     namespace = Config.Modules.database
@@ -42,6 +43,7 @@ android {
 }
 
 dependencies {
+    implementation(project(Dependencies.Modules.core))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -50,6 +52,8 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     kapt(libs.hilt.compiler)
+
+    implementation(libs.realm.base)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

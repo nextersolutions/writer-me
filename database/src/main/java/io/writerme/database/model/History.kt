@@ -1,13 +1,14 @@
-package io.writerme.app.data.model
+package io.writerme.database.model
 
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
-import io.writerme.app.utils.getLast
-import io.writerme.app.utils.push
+import io.writerme.database.extensions.push
+import io.writerme.database.extensions.getLast
 
 open class History: RealmObject {
+
     @PrimaryKey
     var id: Long = System.currentTimeMillis()
 

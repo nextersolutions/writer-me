@@ -1,4 +1,4 @@
-package io.writerme.app.data.model
+package io.writerme.database.model
 
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.Index
@@ -81,7 +81,8 @@ open class Component(): RealmObject {
     // voice, media (image, video)
     constructor(note: Note,
                 url: String,
-                type: ComponentType) : this() {
+                type: ComponentType
+    ) : this() {
         this.noteId = note.id
         this.url = url
         this.type = type

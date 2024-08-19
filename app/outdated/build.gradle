@@ -22,7 +22,7 @@ android {
             useSupportLibrary true
         }
 
-        resConfigs("en", "uk", "de", "es", "fr", "ru")
+
     }
 
     buildTypes {

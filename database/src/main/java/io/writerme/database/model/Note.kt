@@ -1,4 +1,4 @@
-package io.writerme.app.data.model
+package io.writerme.database.model
 
 
 import io.realm.kotlin.ext.realmListOf
