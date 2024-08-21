@@ -1,8 +1,12 @@
-package io.writerme.database.model
+package io.writerme.core.models.model
 
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
+import io.writerme.core.common.FormatUtils.EMPTY
+import io.writerme.core.common.FormatUtils.ZERO
+import io.writerme.core.models.enums.ComponentType
+import org.mongodb.kbson.ObjectId
 import java.util.Date
 
 /**
@@ -13,24 +17,24 @@ import java.util.Date
  * as an analog to the 1:N polymorphic relation into
  * the single SQL table
  */
-open class Component(): RealmObject {
+open class Component() : RealmObject {
     @Index
     @PrimaryKey
-    var id: Long = System.currentTimeMillis()
+    var id: String = ObjectId().toHexString()
 
-    var noteId: Long = 0
+    var noteId: String = EMPTY
 
-    var content: String = ""
+    var content: String = EMPTY
 
     var isChecked: Boolean = false
 
-    var url: String = ""
+    var url: String = EMPTY
 
-    var title: String = ""
+    var title: String = EMPTY
 
     var mediaUrl: String? = null
 
-    private var _time: Long = 0
+    private var _time: Long = ZERO.toLong()
     var time: Date
         get() = Date(_time)
         set(value) {
@@ -54,24 +58,30 @@ open class Component(): RealmObject {
             _type = value.value
         }
 
-    constructor(note: Note,
-                content: String) : this() {
+    constructor(
+        note: Note,
+        content: String
+    ) : this() {
         this.noteId = note.id
         this.content = content
         this.type = ComponentType.Text
     }
 
-    constructor(note: Note,
-                content: String,
-                isChecked: Boolean) : this() {
+    constructor(
+        note: Note,
+        content: String,
+        isChecked: Boolean
+    ) : this() {
         this.noteId = note.id
         this.content = content
         this.type = ComponentType.Checkbox
     }
 
-    constructor(note: Note,
-                date: Date,
-                description: String) : this() {
+    constructor(
+        note: Note,
+        date: Date,
+        description: String
+    ) : this() {
         this.noteId = note.id
         this.time = date
         this.content = description
@@ -79,20 +89,23 @@ open class Component(): RealmObject {
     }
 
     // voice, media (image, video)
-    constructor(note: Note,
-                url: String,
-                type: ComponentType
+    constructor(
+        note: Note,
+        url: String,
+        type: ComponentType
     ) : this() {
         this.noteId = note.id
         this.url = url
         this.type = type
     }
 
-    constructor(note: Note,
-                url: String,
-                title: String,
-                description: String? = null,
-                imageUrl: String? = null) : this() {
+    constructor(
+        note: Note,
+        url: String,
+        title: String,
+        description: String? = null,
+        imageUrl: String? = null
+    ) : this() {
         this.noteId = note.id
         this.url = url
         this.title = title
@@ -102,8 +115,8 @@ open class Component(): RealmObject {
     }
 
     fun copy(
-        id: Long = this.id,
-        noteId: Long = this.noteId,
+        id: String = this.id,
+        noteId: String = this.noteId,
         content: String = this.content,
         isChecked: Boolean = this.isChecked,
         url: String = this.url,
@@ -130,8 +143,8 @@ open class Component(): RealmObject {
     }
 
     fun newCopy(
-        id: Long = System.currentTimeMillis(),
-        noteId: Long = this.noteId,
+        id: String = ObjectId().toHexString(),
+        noteId: String = this.noteId,
         content: String = this.content,
         isChecked: Boolean = this.isChecked,
         url: String = this.url,
@@ -158,16 +171,10 @@ open class Component(): RealmObject {
     }
 
     companion object {
-        fun emptyText() : Component {
+        fun emptyText(): Component {
             return Component().apply {
                 this.type = ComponentType.Text
             }
         }
     }
-}
-
-enum class ComponentType(val value: String) {
-    Text("Text"), Checkbox("Checkbox"),
-    Voice("Voice"), Task("Task"),
-    Link("Link"), Video("Video"), Image("Image")
 }

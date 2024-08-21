@@ -1,19 +1,23 @@
-package io.writerme.database.model
+package io.writerme.core.models.model
 
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
+import io.writerme.core.common.FormatUtils.EMPTY
+import io.writerme.core.common.FormatUtils.ZERO
+import io.writerme.core.common.GlobalConstants
+import io.writerme.core.common.GlobalConstants.HistoryDefaults
 
-open class Settings: RealmObject {
+open class Settings : RealmObject {
     @Index
     @PrimaryKey
-    var id = 0
+    var id = ZERO
 
-    var fullName: String = ""
+    var fullName: String = EMPTY
 
-    var email: String = ""
+    var email: String = EMPTY
 
-    var profilePictureUrl: String = ""
+    var profilePictureUrl: String = EMPTY
 
     var mediaChanges: Int = HistoryDefaults.MEDIA_CHANGES_HISTORY
     var voiceChanges: Int = HistoryDefaults.VOICE_CHANGES_HISTORY
@@ -21,7 +25,7 @@ open class Settings: RealmObject {
     var taskChanges: Int = HistoryDefaults.TASK_CHANGES_HISTORY
     var linkChanges: Int = HistoryDefaults.LINK_CHANGES_HISTORY
 
-    var currentLanguage: String = Const.SUPPORTED_LANGUAGES[0]
+    var currentLanguage: String = GlobalConstants.SUPPORTED_LANGUAGES.first()
 
     var isDarkMode: Boolean = true
 

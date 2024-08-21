@@ -1,17 +1,17 @@
-package io.writerme.database.model
-
+package io.writerme.core.models.model
 
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
+import io.writerme.core.common.FormatUtils.ZERO
 import java.util.Date
 
-open class Note: RealmObject {
+open class Note : RealmObject {
     @Index
     @PrimaryKey
-    var id: Long = System.currentTimeMillis()
+    var id: String = ObjectId().toHexString()
 
     var title: History? = null
 
@@ -21,8 +21,8 @@ open class Note: RealmObject {
 
     var isImportant: Boolean = false
 
-    private var _created: Long = 0
-    var created: Date
+    private var _created: Long = ZERO.toLong()
+    var createdAt: Date
         get() = Date(_created)
         set(value) {
             _created = value.time

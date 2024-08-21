@@ -18,7 +18,7 @@ dependencyResolutionManagement {
         mavenCentral()
         maven(url = "https://jitpack.io")
         maven(url = "https://plugins.gradle.org/m2/")
-        maven(url = uri("https://oss.sonatype.org/content/repositories/snapshots/") )
+        maven(url = uri("https://oss.sonatype.org/content/repositories/snapshots/"))
     }
 }
 

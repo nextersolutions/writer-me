@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.library)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.realm.kotlin)
 }
 
 android {
@@ -74,7 +75,7 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     kapt(libs.hilt.compiler)
 
-    implementation(libs.parse.sdk)
+    implementation(libs.realm.base)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

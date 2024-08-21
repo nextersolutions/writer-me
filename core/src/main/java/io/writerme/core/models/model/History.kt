@@ -1,22 +1,24 @@
-package io.writerme.database.model
+package io.writerme.core.models.model
 
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
-import io.writerme.database.extensions.push
-import io.writerme.database.extensions.getLast
+import io.writerme.core.extensions.getLast
+import io.writerme.core.extensions.push
+import io.writerme.core.models.enums.ComponentType
+import org.mongodb.kbson.ObjectId
 
-open class History: RealmObject {
+open class History : RealmObject {
 
     @PrimaryKey
-    var id: Long = System.currentTimeMillis()
+    var id: String = ObjectId().toHexString()
 
     var changes: RealmList<Component> = realmListOf()
 
-    constructor(): super()
+    constructor() : super()
 
-    constructor(component: Component): this() {
+    constructor(component: Component) : this() {
         changes.add(component)
     }
 
@@ -27,7 +29,7 @@ open class History: RealmObject {
     fun newest(): Component? = changes.getLast()
 
     fun getType(): ComponentType? {
-        return if (changes.isNotEmpty()) changes[0].type else null
+        return if (changes.isNotEmpty()) changes.first().type else null
     }
 
     fun isNotEmpty(): Boolean = changes.isNotEmpty()
