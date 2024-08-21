@@ -6,6 +6,7 @@ import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
 import io.writerme.core.common.FormatUtils.ZERO
+import org.mongodb.kbson.ObjectId
 import java.util.Date
 
 open class Note : RealmObject {

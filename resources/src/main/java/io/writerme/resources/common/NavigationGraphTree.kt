@@ -1,7 +1,12 @@
 package io.writerme.resources.common
 
 enum class NavigationGraphTree {
-    ONBOARDING_FLOW,
+    GREETING,
+    REGISTRATION,
 
-    HOME_FLOW
+    HOME_FLOW,
+    HOME,
+    NOTE,
+    BOOKMARKS,
+    SETTINGS
 }
