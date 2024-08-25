@@ -58,8 +58,8 @@ import io.writerme.resources.common.Dimens.GRID_24
 import io.writerme.resources.common.Dimens.GRID_6
 import io.writerme.resources.common.Dimens.GRID_60
 import io.writerme.resources.common.Dimens.GRID_62
-import io.writerme.resources.themes.SharemyTheme
-import io.writerme.resources.widgets.Spacers.SpacerVerticalView
+import io.writerme.resources.themes.WriterMeTheme
+import io.writerme.resources.widgets.Spacers.SpacerVertical
 
 object EditTexts {
 
@@ -74,8 +74,8 @@ object EditTexts {
         enabled: Boolean = true,
         readOnly: Boolean = false,
         onClick: () -> Unit = {},
-        textStyle: TextStyle = SharemyTheme.typography.editText,
-        placeholderStyle: TextStyle = SharemyTheme.typography.editText, // TODO
+        textStyle: TextStyle = WriterMeTheme.typography.editText,
+        placeholderStyle: TextStyle = WriterMeTheme.typography.editText, // TODO
         isError: Boolean = false,
         error: Int? = null,
         keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(
@@ -256,7 +256,7 @@ object EditTexts {
             )
 
             if (error != null) {
-                SpacerVerticalView(GRID_24)
+                SpacerVertical(GRID_24)
 
                 Text(
                     text = stringResource(id = R.string.app_name), // TODO: update
@@ -282,7 +282,7 @@ object EditTexts {
         val backgroundColor = Color.White
 
         val borderColor = when {
-            text.isEmpty() -> SharemyTheme.colors.primaryBackground // TODO
+            text.isEmpty() -> WriterMeTheme.colors.primaryBackground // TODO
             else -> Color.Black
         }
 
@@ -305,7 +305,7 @@ object EditTexts {
         ) {
             Text(
                 text = text,
-                style = SharemyTheme.typography.editText // TODO
+                style = WriterMeTheme.typography.editText // TODO
             )
         }
     }

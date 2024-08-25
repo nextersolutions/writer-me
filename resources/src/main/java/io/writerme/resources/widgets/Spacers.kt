@@ -23,12 +23,12 @@ object Spacers {
     }
 
     @Composable
-    fun SpacerHorizontalView(value: Dp = GRID_10) {
+    fun SpacerHorizontal(value: Dp = GRID_10) {
         Spacer(modifier = Modifier.width(value))
     }
 
     @Composable
-    fun SpacerVerticalView(value: Dp = GRID_10) {
+    fun SpacerVertical(value: Dp = GRID_10) {
         Spacer(modifier = Modifier.height(value))
     }
 }

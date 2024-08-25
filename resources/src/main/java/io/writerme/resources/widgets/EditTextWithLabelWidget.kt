@@ -26,9 +26,9 @@ import io.writerme.resources.common.Dimens.EDIT_TEXT_HEIGHT
 import io.writerme.resources.common.Dimens.GRID_12
 import io.writerme.resources.common.Dimens.GRID_6
 import io.writerme.resources.themes.AppTheme
-import io.writerme.resources.themes.SharemyTheme
+import io.writerme.resources.themes.WriterMeTheme
 import io.writerme.resources.widgets.EditTexts.EditTextWidget
-import io.writerme.resources.widgets.Spacers.SpacerVerticalView
+import io.writerme.resources.widgets.Spacers.SpacerVertical
 
 @Composable
 fun EditTextWithLabelWidget(
@@ -56,10 +56,10 @@ fun EditTextWithLabelWidget(
     Column {
         Text(
             text = labelText,
-            style = SharemyTheme.typography.editText
+            style = WriterMeTheme.typography.editText
         )
 
-        SpacerVerticalView(GRID_6)
+        SpacerVertical(GRID_6)
 
         EditTextWidget(
             modifier = modifier,

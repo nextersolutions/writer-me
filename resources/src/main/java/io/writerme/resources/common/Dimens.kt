@@ -101,6 +101,7 @@ object Dimens {
     val GRID_63 = 63.dp
     val GRID_64 = 64.dp
     val GRID_65 = 65.dp
+    val GRID_66 = 66.dp
     val GRID_67 = 67.dp
     val GRID_68 = 68.dp
     val GRID_70 = 70.dp
@@ -130,6 +131,7 @@ object Dimens {
     val GRID_125 = 125.dp
     val GRID_124 = 124.dp
     val GRID_128 = 128.dp
+    val GRID_130 = 130.dp
     val GRID_132 = 132.dp
     val GRID_135 = 135.dp
     val GRID_140 = 140.dp
@@ -193,4 +195,13 @@ object Dimens {
 
     val SMALL_GAUGE_PROGRESS_SIZE = GRID_62
     val SMALL_GAUGE_PROGRESS_STROKE_WIDTH = GRID_6
+
+    val screenPadding = 16.dp
+    val screenPaddingBig = 24.dp
+    val bigRadius = 25.dp
+    val shadowRadius = 15.dp
+    val blurRadius = 20.dp
+    val smallRadius = 16.dp
+    val fieldBorder = 1.dp
+    val tabWidth = 110.dp
 }

@@ -1,6 +1,5 @@
-package io.writerme.app.ui.screen
+package io.writerme.features.home.presentation.component
 
-import android.Manifest
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,73 +57,77 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.realm.kotlin.ext.realmListOf
-import io.writerme.app.R
-import io.writerme.app.data.model.BookmarksFolder
-import io.writerme.app.data.model.Component
-import io.writerme.app.data.model.ComponentType
-import io.writerme.app.ui.component.CreateBookmarkDialog
-import io.writerme.app.ui.component.CreateFolderDialogBody
-import io.writerme.app.ui.component.Folder
-import io.writerme.app.ui.component.Link
-import io.writerme.app.ui.component.TitledDialog
-import io.writerme.app.ui.state.BookmarksState
-import io.writerme.app.ui.theme.WriterMeTheme
-import io.writerme.app.ui.theme.dialogBackground
-import io.writerme.app.ui.theme.fieldDark
-import io.writerme.app.ui.theme.light
-import io.writerme.app.ui.theme.strokeLight
-import io.writerme.app.utils.checkAndRequestPermission
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import io.writerme.core.common.FormatUtils.VALUE_2
+import io.writerme.core.models.enums.ComponentType
+import io.writerme.core.models.viewdata.BookmarksFolderViewData
+import io.writerme.core.models.viewdata.ComponentViewData
+import io.writerme.resources.R
+import io.writerme.resources.common.Dimens.GRID_0
+import io.writerme.resources.common.Dimens.GRID_1
+import io.writerme.resources.common.Dimens.GRID_110
+import io.writerme.resources.common.Dimens.GRID_12
+import io.writerme.resources.common.Dimens.GRID_120
+import io.writerme.resources.common.Dimens.GRID_130
+import io.writerme.resources.common.Dimens.GRID_15
+import io.writerme.resources.common.Dimens.GRID_150
+import io.writerme.resources.common.Dimens.GRID_20
+import io.writerme.resources.common.Dimens.GRID_40
+import io.writerme.resources.common.Dimens.GRID_70
+import io.writerme.resources.common.Dimens.GRID_8
+import io.writerme.resources.themes.AppTheme
+import io.writerme.resources.themes.WriterMeTheme
+import io.writerme.resources.widgets.Bookmarks.Folder
+import io.writerme.resources.widgets.Bookmarks.Link
+import io.writerme.resources.widgets.Dialogs.CreateBookmarkDialog
+import io.writerme.resources.widgets.Dialogs.CreateFolderDialogBody
+import io.writerme.resources.widgets.Dialogs.TitledDialog
+import io.writerme.resources.widgets.Spacers.SpacerHorizontal
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun BookmarksScreen(
-    bookmarksState: StateFlow<BookmarksState>,
-    onFolderClicked: (BookmarksFolder) -> Unit,
-    onLinkClicked: (Component) -> Unit,
-    showCreateFolderDialog: () -> Unit,
-    dismissCreateFolderDialog: () -> Unit,
-    showCreateBookmarkDialog: () -> Unit,
-    dismissCreateBookmarkDialog: () -> Unit,
+fun BookmarksComponent(
+    currentFolder: BookmarksFolderViewData,
+    isFloatingDialogShown: Boolean,
+    isBookmarkDialogDisplayed: Boolean,
+    isFolderDialogDisplayed: Boolean,
+    onFolderClicked: (BookmarksFolderViewData) -> Unit,
+    onLinkClicked: (ComponentViewData) -> Unit,
+    toggleCreateFolderDialog: () -> Unit,
+    toggleCreateBookmarkDialog: () -> Unit,
     toggleFloatingDialog: () -> Unit,
     navigateToParentFolder: () -> Unit,
-    createBookmark: (String, String, BookmarksFolder) -> Unit,
+    createBookmark: (String, String, BookmarksFolderViewData) -> Unit,
     createFolder: (String) -> Unit,
-    deleteFolder: (BookmarksFolder) -> Unit,
-    deleteBookmark: (Component) -> Unit,
+    deleteFolder: (BookmarksFolderViewData) -> Unit,
+    deleteBookmark: (ComponentViewData) -> Unit,
     toggleFolderDropdown: (Int) -> Unit,
     toggleBookmarkDropdown: (Int) -> Unit,
     dismissScreen: () -> Unit
 ) {
-    val state = bookmarksState.collectAsStateWithLifecycle()
     val scaffoldState = rememberScaffoldState()
     val padding = dimensionResource(id = R.dimen.screen_padding)
 
-    checkAndRequestPermission(
+    // TODO
+    /*checkAndRequestPermission(
         permission = Manifest.permission.INTERNET,
         onSuccess = {},
         onNotGrantedMessage = R.string.we_wont_load_images
-    )
+    )*/
 
     BackHandler(
         onBack = {
-            if (state.value.isBookmarkDialogDisplayed) {
-                dismissCreateBookmarkDialog()
-            } else if (state.value.isFolderDialogDisplayed) {
-                dismissCreateFolderDialog()
-            } else if (state.value.isFloatingDialogShown) {
+            if (isBookmarkDialogDisplayed) {
+                toggleCreateBookmarkDialog()
+            } else if (isFolderDialogDisplayed) {
+                toggleCreateFolderDialog()
+            } else if (isFloatingDialogShown) {
                 toggleFloatingDialog()
-            } else if (state.value.currentFolder.hasParentFolder()) {
+            } else if (currentFolder.hasParentFolder()) {
                 navigateToParentFolder()
             }
         },
-        enabled = state.value.currentFolder.hasParentFolder() || state.value.isBookmarkDialogDisplayed
-                    || state.value.isFloatingDialogShown || state.value.isFolderDialogDisplayed
+        enabled = currentFolder.hasParentFolder() || isFloatingDialogShown
     )
 
     Box(
@@ -133,7 +135,7 @@ fun BookmarksScreen(
     ) {
         Image(
             painter = painterResource(id = R.drawable.background_main),
-            contentDescription = "",
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -145,19 +147,19 @@ fun BookmarksScreen(
             topBar = {
                 TopAppBar(
                     backgroundColor = Color.Transparent,
-                    elevation = 0.dp,
+                    elevation = GRID_0,
                     title = {
                         Text(
-                            text = state.value.currentFolder.name.ifEmpty {
+                            text = currentFolder.name.ifEmpty {
                                 stringResource(id = R.string.bookmarks)
                             },
                             style = MaterialTheme.typography.h2,
-                            color = MaterialTheme.colors.light
+                            color = WriterMeTheme.colors.light
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = {
-                            if (state.value.currentFolder.hasParentFolder()) {
+                            if (currentFolder.hasParentFolder()) {
                                 navigateToParentFolder()
                             } else {
                                 dismissScreen()
@@ -166,7 +168,7 @@ fun BookmarksScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_back),
                                 contentDescription = stringResource(id = R.string.back_button),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
                     },
@@ -177,7 +179,7 @@ fun BookmarksScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_more),
                                 contentDescription = stringResource(id = R.string.more),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
                     }
@@ -194,70 +196,71 @@ fun BookmarksScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .matchParentSize()
-                            .padding(end = 70.dp),
+                            .padding(end = GRID_70),
                         horizontalArrangement = Arrangement.End
                     ) {
                         AnimatedVisibility(
-                            visible = state.value.isFloatingDialogShown,
-                            enter = slideInHorizontally(initialOffsetX = { it/2 }) + fadeIn(),
-                            exit = slideOutHorizontally(targetOffsetX = { it/2 }) + fadeOut()
+                            visible = isFloatingDialogShown,
+                            enter = slideInHorizontally(initialOffsetX = { it / VALUE_2 }) + fadeIn(),
+                            exit = slideOutHorizontally(targetOffsetX = { it / VALUE_2 }) + fadeOut()
                         ) {
-                            val shape = RoundedCornerShape(dimensionResource(id = R.dimen.big_radius))
+                            val shape =
+                                RoundedCornerShape(dimensionResource(id = R.dimen.big_radius))
 
                             Card(
                                 shape = shape,
                                 modifier = Modifier
                                     .wrapContentHeight()
-                                    .shadow(dimensionResource(id = R.dimen.shadow), shape),
+                                    .shadow(GRID_15, shape),
                                 backgroundColor = Color.Transparent
                             ) {
-                                Row (
+                                Row(
                                     modifier = Modifier
                                         .clip(shape)
-                                        .background(MaterialTheme.colors.dialogBackground)
-                                        .padding(8.dp)
-                                        .shadow(dimensionResource(id = R.dimen.shadow), shape),
+                                        .background(WriterMeTheme.colors.dialogBackground)
+                                        .padding(GRID_8)
+                                        .shadow(GRID_15, shape),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         text = stringResource(id = R.string.bookmark),
                                         modifier = Modifier
                                             .clip(shape)
-                                            .background(MaterialTheme.colors.fieldDark)
+                                            .background(WriterMeTheme.colors.fieldDark)
                                             .border(
-                                                dimensionResource(id = R.dimen.field_border_width),
-                                                MaterialTheme.colors.strokeLight,
+                                                GRID_1,
+                                                WriterMeTheme.colors.strokeLight,
                                                 shape
                                             )
                                             .clickable {
-                                                showCreateBookmarkDialog()
+                                                toggleCreateBookmarkDialog()
                                                 toggleFloatingDialog()
                                             }
-                                            .padding(padding, 12.dp)
-                                            .height(40.dp),
-                                        color = MaterialTheme.colors.light,
+                                            .padding(padding, GRID_12)
+                                            .height(GRID_40),
+                                        color = WriterMeTheme.colors.light,
                                         textAlign = TextAlign.Center
                                     )
 
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    SpacerHorizontal(GRID_8)
 
                                     Text(
                                         text = stringResource(id = R.string.folder),
                                         modifier = Modifier
                                             .clip(shape)
-                                            .background(MaterialTheme.colors.fieldDark)
+                                            .background(WriterMeTheme.colors.fieldDark)
                                             .border(
-                                                dimensionResource(id = R.dimen.field_border_width),
-                                                MaterialTheme.colors.strokeLight,
+                                                GRID_1,
+                                                WriterMeTheme.colors.strokeLight,
                                                 shape
                                             )
                                             .clickable {
-                                                showCreateFolderDialog()
+                                                toggleCreateFolderDialog()
                                                 toggleFloatingDialog()
                                             }
-                                            .padding(padding, 12.dp)
-                                            .height(40.dp),
-                                        color = MaterialTheme.colors.light,
+                                            .padding(padding, GRID_1)
+                                            .height(GRID_40),
+                                        color = WriterMeTheme.colors.light,
                                         textAlign = TextAlign.Center
                                     )
                                 }
@@ -280,25 +283,28 @@ fun BookmarksScreen(
             },
             content = {
                 Column {
-                    if (state.value.isBookmarkDialogDisplayed) {
+                    if (isBookmarkDialogDisplayed) {
                         CreateBookmarkDialog(
                             createBookmark = createBookmark,
-                            bookmarksFolder = state.value.currentFolder,
-                            onDismiss = dismissCreateBookmarkDialog
+                            bookmarksFolder = currentFolder,
+                            onDismiss = toggleCreateBookmarkDialog
                         )
                     }
 
                     AnimatedVisibility(
-                        visible = state.value.currentFolder.folders.isNotEmpty()
+                        visible = currentFolder.folders.isNotEmpty()
                     ) {
                         Row {
                             LazyVerticalGrid(
-                                columns = GridCells.Adaptive(120.dp),
+                                columns = GridCells.Adaptive(GRID_120),
                                 contentPadding = PaddingValues(padding),
                                 content = {
 
-                                    itemsIndexed(items = state.value.currentFolder.folders) { index, item ->
-                                        val isExpanded = state.value.folderDropdownIndex == index
+                                    itemsIndexed(
+                                        items = currentFolder.folders
+                                    ) { index, item ->
+                                        // TODO
+                                        val isExpanded = false
 
                                         ExposedDropdownMenuBox(
                                             expanded = isExpanded,
@@ -313,19 +319,21 @@ fun BookmarksScreen(
                                                         },
                                                         onClick = { onFolderClicked(item) }
                                                     )
-                                                    .width(110.dp)
-                                                    .padding(8.dp)
+                                                    .width(GRID_110)
+                                                    .padding(GRID_8)
                                             )
 
 
                                             MaterialTheme(
                                                 colors = MaterialTheme.colors.copy(
-                                                    surface = MaterialTheme.colors.light,
+                                                    surface = WriterMeTheme.colors.light,
                                                     background = Color.Blue
                                                 ),
-                                                shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(
-                                                    dimensionResource(id = R.dimen.small_radius)
-                                                ))
+                                                shapes = MaterialTheme.shapes.copy(
+                                                    medium = RoundedCornerShape(
+                                                        dimensionResource(id = R.dimen.small_radius)
+                                                    )
+                                                )
                                             ) {
                                                 ExposedDropdownMenu(
                                                     expanded = isExpanded,
@@ -344,13 +352,15 @@ fun BookmarksScreen(
                                                         ) {
                                                             Text(
                                                                 text = stringResource(id = R.string.delete),
-                                                                style  = MaterialTheme.typography.body1
+                                                                style = MaterialTheme.typography.body1
                                                             )
 
                                                             Icon(
                                                                 imageVector = Icons.Default.Delete,
-                                                                contentDescription = stringResource(id = R.string.delete),
-                                                                modifier = Modifier.size(20.dp),
+                                                                contentDescription = stringResource(
+                                                                    id = R.string.delete
+                                                                ),
+                                                                modifier = Modifier.size(GRID_20),
                                                                 tint = Color.DarkGray
                                                             )
                                                         }
@@ -366,13 +376,16 @@ fun BookmarksScreen(
 
                     Row {
                         LazyVerticalGrid(
-                            columns = GridCells.Adaptive(150.dp),
+                            columns = GridCells.Adaptive(GRID_150),
                             contentPadding = PaddingValues(padding),
                             content = {
-                                val links = state.value.currentFolder.bookmarks
+                                val links = currentFolder.bookmarks
 
-                                itemsIndexed(items = links) { index, item ->
-                                    val isExpanded = state.value.bookmarkDropdownIndex == index
+                                itemsIndexed(
+                                    items = links
+                                ) { index, item ->
+                                    // TODO: !!!!!!!!!!!!!!
+                                    val isExpanded = false
 
                                     ExposedDropdownMenuBox(
                                         expanded = isExpanded,
@@ -383,19 +396,20 @@ fun BookmarksScreen(
                                             onClick = { onLinkClicked(item) },
                                             onLongClick = { toggleBookmarkDropdown(index) },
                                             modifier = Modifier
-                                                .padding(8.dp)
+                                                .padding(GRID_8)
                                                 .clickable(enabled = false, onClick = {}),
-                                            height = 130.dp
+                                            height = GRID_130
                                         )
 
                                         MaterialTheme(
                                             colors = MaterialTheme.colors.copy(
-                                                surface = MaterialTheme.colors.light,
-                                                background = Color.Blue
+                                                surface = WriterMeTheme.colors.light
                                             ),
-                                            shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(
-                                                dimensionResource(id = R.dimen.small_radius)
-                                            ))
+                                            shapes = MaterialTheme.shapes.copy(
+                                                medium = RoundedCornerShape(
+                                                    dimensionResource(id = R.dimen.small_radius)
+                                                )
+                                            )
                                         ) {
                                             ExposedDropdownMenu(
                                                 expanded = isExpanded,
@@ -414,13 +428,13 @@ fun BookmarksScreen(
                                                     ) {
                                                         Text(
                                                             text = stringResource(id = R.string.delete),
-                                                            style  = MaterialTheme.typography.body1
+                                                            style = MaterialTheme.typography.body1
                                                         )
 
                                                         Icon(
                                                             imageVector = Icons.Default.Delete,
                                                             contentDescription = stringResource(id = R.string.delete),
-                                                            modifier = Modifier.size(20.dp),
+                                                            modifier = Modifier.size(GRID_20),
                                                             tint = Color.DarkGray
                                                         )
                                                     }
@@ -436,17 +450,17 @@ fun BookmarksScreen(
             }
         )
 
-        if (state.value.isFolderDialogDisplayed) {
+        if (isFolderDialogDisplayed) {
             TitledDialog(
                 title = stringResource(id = R.string.create_folder),
-                onDismiss = dismissCreateFolderDialog,
+                onDismiss = toggleCreateFolderDialog,
                 content = {
                     CreateFolderDialogBody(
                         createFolder = {
                             createFolder(it)
-                            dismissCreateFolderDialog()
+                            toggleCreateFolderDialog()
                         },
-                        onDismiss = dismissCreateFolderDialog
+                        onDismiss = toggleCreateFolderDialog
                     )
                 }
             )
@@ -457,50 +471,49 @@ fun BookmarksScreen(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun BookmarksScreenPreview() {
-    val mainFolder = BookmarksFolder()
-    val job = BookmarksFolder().apply {
-        name = "Job"
+    var mainFolder = BookmarksFolderViewData()
+    val job = BookmarksFolderViewData(
+        name = "Job",
         parent = mainFolder
-    }
-    mainFolder.apply {
-        this.folders = realmListOf(
+    )
+
+    mainFolder = mainFolder.copy(
+        folders = listOf(
             job,
-            BookmarksFolder().apply {
-                name = "Programming"
+            BookmarksFolderViewData(
+                name = "Programming",
                 parent = mainFolder
-            },
-            BookmarksFolder().apply {
-                name = "Films"
+            ),
+            BookmarksFolderViewData(
+                name = "Films",
                 parent = mainFolder
-            }
-        )
-
-        this.bookmarks = realmListOf(
-            Component().apply {
-                type = ComponentType.Link
+            )
+        ),
+        bookmarks = listOf(
+            ComponentViewData(
+                type = ComponentType.Link,
                 title = "Top Travel Guide"
-            },
-            Component().apply {
-                type = ComponentType.Link
+            ),
+            ComponentViewData(
+                type = ComponentType.Link,
                 title = "Houses for Rent: Your best option"
-            }
+            )
         )
-    }
+    )
 
-    val state = BookmarksState(mainFolder, false)
-
-    WriterMeTheme {
-        BookmarksScreen(
-            bookmarksState = MutableStateFlow(state),
+    AppTheme {
+        BookmarksComponent(
+            currentFolder = mainFolder,
+            isFloatingDialogShown = false,
+            isBookmarkDialogDisplayed = false,
+            isFolderDialogDisplayed = false,
             onFolderClicked = {},
             onLinkClicked = {},
-            showCreateFolderDialog = {},
-            dismissCreateFolderDialog = {},
-            showCreateBookmarkDialog = {},
-            dismissCreateBookmarkDialog = {},
+            toggleCreateFolderDialog = {},
+            toggleCreateBookmarkDialog = {},
             toggleFloatingDialog = {},
             navigateToParentFolder = {},
-            createBookmark = { _, _, _ ->},
+            createBookmark = { _, _, _ -> },
             createFolder = {},
             deleteFolder = {},
             deleteBookmark = {},

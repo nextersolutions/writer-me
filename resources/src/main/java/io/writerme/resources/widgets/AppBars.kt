@@ -9,15 +9,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import io.writerme.resources.themes.SharemyTheme
+import io.writerme.resources.themes.WriterMeTheme
 
 object AppBars {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun AppBarTitleCentered(
         titleRes: Int? = null,
-        titleStyle: TextStyle = SharemyTheme.typography.welcomeTitle,
-        backgroundColor: Color = SharemyTheme.colors.primaryBackground,
+        titleStyle: TextStyle = WriterMeTheme.typography.welcomeTitle,
+        backgroundColor: Color = WriterMeTheme.colors.primaryBackground,
         navigationIcon: @Composable () -> Unit = {},
         actions: @Composable RowScope.() -> Unit = {}
     ) {

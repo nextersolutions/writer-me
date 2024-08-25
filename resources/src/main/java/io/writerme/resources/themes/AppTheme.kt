@@ -5,7 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 
-object SharemyTheme {
+object WriterMeTheme {
 
     val colors: AppColors
         @Composable

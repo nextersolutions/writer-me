@@ -2,8 +2,13 @@ package io.writerme.resources.extensions
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.ExperimentalMaterialApi
@@ -13,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
@@ -26,6 +32,12 @@ import androidx.core.view.WindowCompat
 import io.writerme.core.common.FormatUtils.VALUE_1
 import io.writerme.core.common.FormatUtils.ZERO
 import io.writerme.core.common.GlobalConstants.AppLink.linkTag
+import io.writerme.resources.common.Dimens.GRID_0
+import io.writerme.resources.common.Dimens.GRID_1
+import io.writerme.resources.common.Dimens.GRID_16
+import io.writerme.resources.common.Dimens.GRID_25
+import io.writerme.resources.common.Dimens.GRID_40
+import io.writerme.resources.themes.WriterMeTheme
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
 fun Modifier.clickableWithoutRipple(
@@ -170,3 +182,16 @@ fun annotate(
         }
     }
 }
+
+@Composable
+fun Modifier.textFieldBackground() =
+    this
+        .clip(RoundedCornerShape(GRID_25))
+        .border(
+            GRID_1,
+            WriterMeTheme.colors.strokeLight,
+            RoundedCornerShape(GRID_25)
+        )
+        .background(WriterMeTheme.colors.fieldDark)
+        .padding(horizontal = GRID_16, vertical = GRID_0)
+        .height(GRID_40)

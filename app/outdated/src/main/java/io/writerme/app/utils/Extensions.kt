@@ -50,46 +50,6 @@ import io.writerme.app.ui.theme.strokeLight
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
-fun Long.toTime(): String {
-    var result = ""
-    var quotient = this
-    var remainder: Long
-
-    val seconds = 60
-    val minutes = seconds
-    val hours = 24
-    val days = 365
-
-    var i = 1
-
-    do {
-        val divider = when (i) {
-            1 -> seconds
-            2 -> minutes
-            3 -> hours
-            else -> days
-        }
-
-        remainder = quotient % divider
-        quotient /= divider
-
-        result = if (i > 1) {
-            "$remainder:$result"
-        } else {
-            val rem = if (remainder < 10) {
-                "0$remainder"
-            } else remainder.toString()
-
-            if (quotient > 0) {
-                rem
-            } else "0:$rem"
-        }
-
-        i++
-    } while (quotient > 0)
-
-    return result
-}
 
 fun Context.getCurrentLocale(): Locale {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -110,12 +70,13 @@ fun ClipboardManager.copyComponentContent(component: Component, context: Context
     this.setText(AnnotatedString(text))
 
     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
-        Toast.makeText(context, context.resources.getString(R.string.copied), Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.resources.getString(R.string.copied), Toast.LENGTH_SHORT)
+            .show()
 }
 
 fun Bitmap.toFile(
     parentFolder: File
-) : Uri? {
+): Uri? {
     return try {
         val file = File("${parentFolder.absolutePath}/image_${System.currentTimeMillis()}.jpg")
 
@@ -159,29 +120,17 @@ fun String.toFirstName(): String {
 }
 
 @Composable
-fun HomeFilterTab.displayName() : String {
+fun HomeFilterTab.displayName(): String {
     return when (this) {
         HomeFilterTab.All -> {
             stringResource(id = R.string.all)
         }
+
         HomeFilterTab.Important -> {
             stringResource(id = R.string.important)
         }
     }
 }
-
-@Composable
-fun Modifier.textFieldBackground() =
-    this
-        .clip(RoundedCornerShape(dimensionResource(id = R.dimen.big_radius)))
-        .border(
-            dimensionResource(id = R.dimen.field_border_width),
-            MaterialTheme.colors.strokeLight,
-            RoundedCornerShape(dimensionResource(id = R.dimen.big_radius))
-        )
-        .background(MaterialTheme.colors.fieldDark)
-        .padding(dimensionResource(id = R.dimen.screen_padding), 0.dp)
-        .height(40.dp)
 
 
 @Composable
