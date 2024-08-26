@@ -88,6 +88,8 @@ dependencies {
     implementation(libs.play.services.auth)
     // end region
 
+    implementation(libs.chip.textfield)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

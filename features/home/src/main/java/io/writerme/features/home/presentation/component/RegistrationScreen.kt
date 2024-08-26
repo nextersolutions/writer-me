@@ -60,7 +60,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun RegistrationScreen(
     saveName: (String) -> Unit,
-    proceedToNextScreen: () -> Unit,
+    proceedToNextScreen: () -> Unit
 ) {
     val typing = stringResource(id = R.string.typing)
 
@@ -112,7 +112,7 @@ fun RegistrationScreen(
             var millis = 0
             var counter = 1
             while (counter <= 3) {
-                typingText = when(counter) {
+                typingText = when (counter) {
                     1 -> "$typing."
                     2 -> "$typing.."
                     3 -> {
@@ -155,7 +155,6 @@ fun RegistrationScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -242,8 +241,8 @@ fun RegistrationScreen(
 
             AnimatedVisibility(
                 visible = isUserMessageVisible,
-                enter = slideInHorizontally(initialOffsetX = { it/2 }) + scaleIn(),
-                exit = slideOutHorizontally(targetOffsetX = { it/2 }) + scaleOut(),
+                enter = slideInHorizontally(initialOffsetX = { it / 2 }) + scaleIn(),
+                exit = slideOutHorizontally(targetOffsetX = { it / 2 }) + scaleOut(),
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text(
@@ -331,7 +330,9 @@ fun RegistrationScreen(
                             if (it.type == KeyEventType.KeyDown) {
                                 send()
                                 true
-                            } else false
+                            } else {
+                                false
+                            }
                         },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.body1.copy(color = MaterialTheme.colors.light),
@@ -350,7 +351,7 @@ fun RegistrationScreen(
                             }
                             innerTextField()
                         }
-                    },
+                    }
                 )
 
                 IconButton(

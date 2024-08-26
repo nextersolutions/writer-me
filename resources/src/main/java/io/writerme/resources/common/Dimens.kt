@@ -3,6 +3,7 @@ package io.writerme.resources.common
 import androidx.compose.ui.unit.dp
 
 object Dimens {
+    const val NO_WEIGHT = 0.0f
     const val WEIGHT_MAX = 1.0f
     const val WEIGHT_004 = 0.04f
     const val WEIGHT_008 = 0.08f
@@ -31,6 +32,7 @@ object Dimens {
     const val WEIGHT_076 = 0.76f
     const val WEIGHT_08 = 0.8f
     const val WEIGHT_084 = 0.84f
+    const val WEIGHT_085 = 0.85f
     const val WEIGHT_088 = 0.88f
     const val WEIGHT_09 = 0.9f
     const val WEIGHT_092 = 0.92f

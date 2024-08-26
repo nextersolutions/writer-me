@@ -104,7 +104,7 @@ fun NoteScreen(
     addLinkSection: (String) -> Unit,
     toggleCheckbox: (Component) -> Unit,
     deleteSection: (History) -> Unit,
-    toggleAddLinkDialogVisibility: () -> Unit,
+    toggleAddLinkDialogVisibility: () -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
 
@@ -179,16 +179,17 @@ fun NoteScreen(
                                 surface = MaterialTheme.colors.dropdownBackground,
                                 background = Color.Blue
                             ),
-                            shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(
-                                dimensionResource(id = R.dimen.small_radius)
-                            ))
+                            shapes = MaterialTheme.shapes.copy(
+                                medium = RoundedCornerShape(
+                                    dimensionResource(id = R.dimen.small_radius)
+                                )
+                            )
                         ) {
                             DropdownMenu(
                                 expanded = state.value.isTopBarDropdownVisible,
                                 onDismissRequest = toggleTopBarDropdownVisibility,
                                 properties = PopupProperties()
                             ) {
-
                                 DropdownMenuItem(
                                     onClick = toggleHistoryMode,
                                     enabled = true
@@ -263,7 +264,7 @@ fun NoteScreen(
                             if (!state.value.isTagsBarVisible) {
                                 showHashtagBar(true)
                             }
-                            //focusRequester.requestFocus()
+                            // focusRequester.requestFocus()
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_hashtag),
@@ -322,7 +323,9 @@ fun NoteScreen(
                 modifier = Modifier
                     .fillMaxHeight()
                     .padding(
-                        start = padding, top = padding, end = padding,
+                        start = padding,
+                        top = padding,
+                        end = padding,
                         bottom = paddingValues.calculateBottomPadding() + padding
                     )
                     .systemBarsPadding().imePadding()
@@ -362,11 +365,10 @@ fun NoteScreen(
                                     .padding(bottom = dimensionResource(id = R.dimen.screen_padding_big))
                             )
                         }
-                    }
-                    else {
+                    } else {
                         val shape = RoundedCornerShape(dimensionResource(id = R.dimen.big_radius))
 
-                        Row (
+                        Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(bottom = padding)
                         ) {
@@ -422,7 +424,7 @@ fun NoteScreen(
 
                 itemsIndexed(
                     items = note.content,
-                    itemContent = {currentIndex, item ->
+                    itemContent = { currentIndex, item ->
                         val newest = item.newest()
 
                         newest?.let { component ->
@@ -476,7 +478,7 @@ fun NoteScreen(
                                                 },
                                                 onDeleteCheckBox = {
                                                     deleteSection(item)
-                                                },
+                                                }
                                             )
                                         }
                                         ComponentType.Voice -> {}
@@ -513,9 +515,11 @@ fun NoteScreen(
                                         surface = MaterialTheme.colors.light,
                                         background = Color.Blue
                                     ),
-                                    shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(
-                                        dimensionResource(id = R.dimen.small_radius)
-                                    ))
+                                    shapes = MaterialTheme.shapes.copy(
+                                        medium = RoundedCornerShape(
+                                            dimensionResource(id = R.dimen.small_radius)
+                                        )
+                                    )
                                 ) {
                                     ExposedDropdownMenu(
                                         expanded = isExpanded,
@@ -569,7 +573,8 @@ fun NoteScreen(
                                             Column {
                                                 DropdownMenuItem(onClick = {
                                                     clipboardManager.copyComponentContent(
-                                                        component = component, context = context
+                                                        component = component,
+                                                        context = context
                                                     )
                                                     dismissDropDown()
                                                 }) {
@@ -580,7 +585,7 @@ fun NoteScreen(
                                                     ) {
                                                         Text(
                                                             text = stringResource(id = R.string.copy),
-                                                            style  = MaterialTheme.typography.body1
+                                                            style = MaterialTheme.typography.body1
                                                         )
 
                                                         Icon(
@@ -600,7 +605,7 @@ fun NoteScreen(
                                                     ) {
                                                         Text(
                                                             text = stringResource(id = R.string.history),
-                                                            style  = MaterialTheme.typography.body1
+                                                            style = MaterialTheme.typography.body1
                                                         )
 
                                                         Icon(
@@ -703,7 +708,9 @@ fun NoteScreenPreview() {
         content.addAll(
             listOf(
                 History(text),
-                History(checkbox), History(checkbox1), History(checkbox2)
+                History(checkbox),
+                History(checkbox1),
+                History(checkbox2)
             )
         )
 
@@ -723,7 +730,7 @@ fun NoteScreenPreview() {
             addNewTag = {},
             deleteTag = {},
             saveChanges = {},
-            onComponentChange = { _, _ ->},
+            onComponentChange = { _, _ -> },
             addNewCheckBox = {},
             navigateBack = {},
             addImageSection = {},

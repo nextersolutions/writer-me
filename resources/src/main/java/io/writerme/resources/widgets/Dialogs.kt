@@ -76,7 +76,7 @@ object Dialogs {
         createBookmark: (url: String, title: String, parent: BookmarksFolderViewData) -> Unit,
         bookmarksFolder: BookmarksFolderViewData,
         onDismiss: () -> Unit,
-        modifier: Modifier = Modifier,
+        modifier: Modifier = Modifier
     ) {
         val shape = RoundedCornerShape(GRID_25)
         val padding = GRID_16
@@ -190,7 +190,7 @@ object Dialogs {
                                             }
                                             innerTextField()
                                         }
-                                    },
+                                    }
                                 )
 
                                 SpacerVertical(padding)
@@ -328,7 +328,6 @@ object Dialogs {
                             }
                         }
                     }
-
                 }
             }
         }
@@ -337,7 +336,7 @@ object Dialogs {
     @Composable
     fun CreateFolderDialogBody(
         createFolder: (name: String) -> Unit,
-        onDismiss: () -> Unit,
+        onDismiss: () -> Unit
     ) {
         var name by remember {
             mutableStateOf(EMPTY)
@@ -372,7 +371,7 @@ object Dialogs {
                         }
                         innerTextField()
                     }
-                },
+                }
             )
 
             SpacerVertical(screenPadding)
@@ -487,7 +486,7 @@ object Dialogs {
                         }
                         innerTextField()
                     }
-                },
+                }
             )
 
             SpacerVertical(screenPadding)

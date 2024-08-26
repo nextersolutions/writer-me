@@ -51,14 +51,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
 
-fun Context.getCurrentLocale(): Locale {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        this.resources.configuration.locales[0]
-    } else {
-        this.resources.configuration.locale
-    }
-}
-
 fun ClipboardManager.copyComponentContent(component: Component, context: Context) {
     val text = when (component.type) {
         ComponentType.Text, ComponentType.Checkbox, ComponentType.Task -> component.content
@@ -118,20 +110,6 @@ fun String.toFirstName(): String {
         return array[0]
     } else this
 }
-
-@Composable
-fun HomeFilterTab.displayName(): String {
-    return when (this) {
-        HomeFilterTab.All -> {
-            stringResource(id = R.string.all)
-        }
-
-        HomeFilterTab.Important -> {
-            stringResource(id = R.string.important)
-        }
-    }
-}
-
 
 @Composable
 fun checkAndRequestPermission(permission: String, onSuccess: () -> Unit, onNotGrantedMessage: Int) {

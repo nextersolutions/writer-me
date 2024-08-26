@@ -23,15 +23,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.debugInspectorInfo
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.core.view.WindowCompat
+import io.writerme.app.ui.component.HomeFilterTab
 import io.writerme.core.common.FormatUtils.VALUE_1
 import io.writerme.core.common.FormatUtils.ZERO
 import io.writerme.core.common.GlobalConstants.AppLink.linkTag
+import io.writerme.resources.R
 import io.writerme.resources.common.Dimens.GRID_0
 import io.writerme.resources.common.Dimens.GRID_1
 import io.writerme.resources.common.Dimens.GRID_16
@@ -179,6 +182,19 @@ fun annotate(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun HomeFilterTab.displayName(): String {
+    return when (this) {
+        HomeFilterTab.All -> {
+            stringResource(id = R.string.all)
+        }
+
+        HomeFilterTab.Important -> {
+            stringResource(id = R.string.important)
         }
     }
 }

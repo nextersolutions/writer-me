@@ -299,7 +299,6 @@ fun BookmarksComponent(
                                 columns = GridCells.Adaptive(GRID_120),
                                 contentPadding = PaddingValues(padding),
                                 content = {
-
                                     itemsIndexed(
                                         items = currentFolder.folders
                                     ) { index, item ->
@@ -323,7 +322,6 @@ fun BookmarksComponent(
                                                     .padding(GRID_8)
                                             )
 
-
                                             MaterialTheme(
                                                 colors = MaterialTheme.colors.copy(
                                                     surface = WriterMeTheme.colors.light,
@@ -340,7 +338,6 @@ fun BookmarksComponent(
                                                     onDismissRequest = { toggleFolderDropdown(index) },
                                                     scrollState = rememberScrollState()
                                                 ) {
-
                                                     DropdownMenuItem(onClick = {
                                                         deleteFolder(item)
                                                         toggleFolderDropdown(index)
@@ -416,7 +413,6 @@ fun BookmarksComponent(
                                                 onDismissRequest = { toggleBookmarkDropdown(index) },
                                                 scrollState = rememberScrollState()
                                             ) {
-
                                                 DropdownMenuItem(onClick = {
                                                     deleteBookmark(item)
                                                     toggleBookmarkDropdown(index)

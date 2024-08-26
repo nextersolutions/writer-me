@@ -1,12 +1,10 @@
-package io.writerme.app.ui.component
+package io.writerme.resources.widgets
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
@@ -24,21 +22,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.dokar.chiptextfield.BasicChipTextField
 import com.dokar.chiptextfield.Chip
 import com.dokar.chiptextfield.ChipTextFieldDefaults
 import com.dokar.chiptextfield.rememberChipTextFieldState
-import io.writerme.app.R
-import io.writerme.app.ui.theme.WriterMeTheme
-import io.writerme.app.ui.theme.backgroundGrey
-import io.writerme.app.ui.theme.light
-import io.writerme.app.ui.theme.strokeLight
-
+import io.writerme.core.common.FormatUtils.VALUE_1
+import io.writerme.resources.R
+import io.writerme.resources.common.Dimens.GRID_1
+import io.writerme.resources.common.Dimens.GRID_13
+import io.writerme.resources.common.Dimens.GRID_4
+import io.writerme.resources.common.Dimens.GRID_8
+import io.writerme.resources.common.Dimens.screenPadding
+import io.writerme.resources.themes.AppTheme
+import io.writerme.resources.themes.WriterMeTheme
+import io.writerme.resources.widgets.Spacers.SpacerVertical
 
 @Composable
 fun TagsBar(
@@ -57,31 +57,37 @@ fun TagsBar(
         chips = tags.map { Chip(it) }
     )
 
-    val padding = dimensionResource(id = R.dimen.screen_padding)
-
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = padding)
+            .padding(bottom = screenPadding)
     ) {
         Divider(
             modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colors.strokeLight,
-            thickness = 1.dp
+            color = WriterMeTheme.colors.strokeLight,
+            thickness = GRID_1
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        SpacerVertical(GRID_8)
 
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(
                 text = stringResource(id = R.string.tags),
                 style = MaterialTheme.typography.h4,
-                color = MaterialTheme.colors.light,
-                modifier = Modifier.padding(top = 13.dp, end = padding)
+                color = WriterMeTheme.colors.light,
+                modifier = Modifier.padding(
+                    top = GRID_13,
+                    end = screenPadding
+                )
             )
 
             BasicChipTextField(
-                modifier = Modifier.focusable().focusRequester(focusRequester).fillMaxWidth(),
+                modifier = Modifier
+                    .focusable()
+                    .focusRequester(focusRequester)
+                    .fillMaxWidth(),
                 state = state,
                 value = text,
                 onValueChange = { text = it },
@@ -89,13 +95,15 @@ fun TagsBar(
                     addNewTag(it)
                     Chip(it)
                 },
-                textStyle = MaterialTheme.typography.body1.copy(color = MaterialTheme.colors.light),
+                textStyle = MaterialTheme.typography.body1.copy(
+                    color = WriterMeTheme.colors.light
+                ),
                 chipStyle = ChipTextFieldDefaults.chipStyle(
-                    shape = RoundedCornerShape(padding),
-                    focusedBackgroundColor = MaterialTheme.colors.backgroundGrey,
-                    unfocusedBackgroundColor = MaterialTheme.colors.backgroundGrey,
-                    focusedTextColor = MaterialTheme.colors.light,
-                    unfocusedTextColor = MaterialTheme.colors.light,
+                    shape = RoundedCornerShape(screenPadding),
+                    focusedBackgroundColor = WriterMeTheme.colors.backgroundGrey,
+                    unfocusedBackgroundColor = WriterMeTheme.colors.backgroundGrey,
+                    focusedTextColor = WriterMeTheme.colors.light,
+                    unfocusedTextColor = WriterMeTheme.colors.light,
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent
                 ),
@@ -103,8 +111,10 @@ fun TagsBar(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = null,
-                        tint = MaterialTheme.colors.light,
-                        modifier = Modifier.clickable { deleteTag(it.text) }.padding(end = 4.dp)
+                        tint = WriterMeTheme.colors.light,
+                        modifier = Modifier
+                            .clickable { deleteTag(it.text) }
+                            .padding(end = GRID_4)
                     )
                 },
                 decorationBox = { innerTextField ->
@@ -113,8 +123,8 @@ fun TagsBar(
                             Text(
                                 text = stringResource(id = R.string.add_hashtags),
                                 style = MaterialTheme.typography.body1,
-                                color = MaterialTheme.colors.light,
-                                maxLines = 1,
+                                color = WriterMeTheme.colors.light,
+                                maxLines = VALUE_1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
@@ -129,7 +139,7 @@ fun TagsBar(
 @Preview(showBackground = true)
 @Composable
 fun TagsBarPreview() {
-    WriterMeTheme {
+    AppTheme {
         TagsBar(listOf("traveling", "unstoppable", "dreamer"), {}, {}, FocusRequester())
     }
 }

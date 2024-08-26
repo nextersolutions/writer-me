@@ -1,4 +1,4 @@
-package io.writerme.app.ui.component
+package io.writerme.resources.widgets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -7,9 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -29,21 +28,23 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import io.writerme.app.R
-import io.writerme.app.data.model.Component
-import io.writerme.app.data.model.ComponentType
-import io.writerme.app.ui.theme.WriterMeTheme
-import io.writerme.app.ui.theme.light
+import io.writerme.core.models.enums.ComponentType
+import io.writerme.core.models.viewdata.ComponentViewData
+import io.writerme.resources.R
+import io.writerme.resources.common.Dimens.GRID_16
+import io.writerme.resources.common.Dimens.GRID_22
+import io.writerme.resources.common.Dimens.GRID_3
+import io.writerme.resources.common.Dimens.screenPadding
+import io.writerme.resources.themes.AppTheme
+import io.writerme.resources.themes.WriterMeTheme
 
 @Composable
 fun Checkbox(
-    component: Component,
-    onValueChange: (Component) -> Unit,
+    component: ComponentViewData,
+    onValueChange: (ComponentViewData) -> Unit,
     onCheckedChange: () -> Unit,
     onAddNewCheckbox: () -> Unit,
     onDeleteCheckBox: () -> Unit,
@@ -60,52 +61,59 @@ fun Checkbox(
             requester.requestFocus()
         }
 
+        val iconRes = when (component.isChecked) {
+            true -> R.drawable.ic_checked
+            false -> R.drawable.ic_unchecked
+        }
+
         Row(
             modifier = modifier.fillMaxWidth()
         ) {
             Icon(
                 modifier = Modifier
-                    .width(22.dp)
-                    .height(22.dp)
-                    .padding(0.dp, 3.dp, 0.dp, 0.dp)
+                    .size(GRID_22)
+                    .padding(top = GRID_3)
                     .clickable(onClick = onCheckedChange),
-                painter = if (component.isChecked) painterResource(id = R.drawable.ic_checked)
-                            else painterResource(id = R.drawable.ic_unchecked),
+                painter = painterResource(id = iconRes),
                 contentDescription = component.content,
-                tint = MaterialTheme.colors.light
+                tint = WriterMeTheme.colors.light
             )
+
             BasicTextField(
                 value = localText,
                 onValueChange = {
                     localText = it
                     onValueChange(component.copy(content = it))
                 },
-                // .defaultMinSize(minHeight = 48.dp)
                 modifier = Modifier
-                    .padding(16.dp, 0.dp, 0.dp, 0.dp)
+                    .padding(start = GRID_16)
                     .fillMaxWidth()
                     .onKeyEvent { event ->
-                        if (event.type == KeyEventType.KeyUp &&
-                            event.key == Key.Backspace &&
-                            localText.isEmpty()
-                        ) {
-                            onDeleteCheckBox()
-                            return@onKeyEvent true
-                        } else if (
-                            event.type == KeyEventType.KeyDown &&
-                            event.key == Key.Enter
-                        ) {
-                            onAddNewCheckbox()
-                            return@onKeyEvent true
-                        }
+                        when {
+                            event.type == KeyEventType.KeyUp && event.key == Key.Backspace &&
+                                localText.isEmpty() -> {
+                                onDeleteCheckBox()
+                                return@onKeyEvent true
+                            }
 
-                        false
+                            event.type == KeyEventType.KeyDown && event.key == Key.Enter -> {
+                                onAddNewCheckbox()
+                                return@onKeyEvent true
+                            }
+
+                            else -> false
+                        }
                     }
                     .focusRequester(requester)
                     .focusable(),
-                textStyle = MaterialTheme.typography.subtitle1.copy(color = MaterialTheme.colors.light,
-                    textDecoration = if (component.isChecked) TextDecoration.LineThrough else TextDecoration.None),
-                cursorBrush = SolidColor(MaterialTheme.colors.light)
+                textStyle = MaterialTheme.typography.subtitle1.copy(
+                    color = WriterMeTheme.colors.light,
+                    textDecoration = when (component.isChecked) {
+                        true -> TextDecoration.LineThrough
+                        false -> TextDecoration.None
+                    }
+                ),
+                cursorBrush = SolidColor(WriterMeTheme.colors.light)
             )
         }
     }
@@ -114,16 +122,20 @@ fun Checkbox(
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun CheckboxPreview() {
-    val component = Component().apply {
-        type = ComponentType.Checkbox
-        content = "Complete writing post for Instagram, Complete writing post for Instagram, Complete writing post for Instagram"
+    val component = ComponentViewData(
+        type = ComponentType.Checkbox,
+        content = "Complete writing post for Instagram, Complete writing post for Instagram, Complete writing post for Instagram",
         isChecked = false
-    }
+    )
 
-    val modifier = Modifier.padding(dimensionResource(id = R.dimen.screen_padding))
+    val modifier = Modifier.padding(screenPadding)
 
-    WriterMeTheme {
-        Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
+    AppTheme {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.DarkGray)
+        ) {
             Checkbox(component = component, {}, {}, {}, {}, modifier = modifier)
         }
     }

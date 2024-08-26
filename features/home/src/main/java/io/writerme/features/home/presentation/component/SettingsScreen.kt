@@ -135,7 +135,7 @@ fun SettingsScreen(
             ) {
                 val screenPadding = dimensionResource(id = R.dimen.screen_padding)
 
-                Row (
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(screenPadding),
@@ -223,7 +223,8 @@ fun SettingsScreen(
                             decreaseValueId = R.string.decrease_number_of_text_changes,
                             onChange = {
                                 onCounterChange(Const.TEXT_CHANGES_HISTORY_KEY, it)
-                            })
+                            }
+                        )
 
                         SettingsCounterRow(
                             stringId = R.string.number_of_voice_changes,
@@ -232,7 +233,8 @@ fun SettingsScreen(
                             decreaseValueId = R.string.decrease_number_of_voice_changes,
                             onChange = {
                                 onCounterChange(Const.VOICE_CHANGES_HISTORY_KEY, it)
-                            })
+                            }
+                        )
 
                         SettingsCounterRow(
                             stringId = R.string.number_of_tasks_changes,
@@ -241,7 +243,8 @@ fun SettingsScreen(
                             decreaseValueId = R.string.decrease_number_of_tasks_changes,
                             onChange = {
                                 onCounterChange(Const.TASK_CHANGES_HISTORY_KEY, it)
-                            })
+                            }
+                        )
 
                         SettingsCounterRow(
                             stringId = R.string.number_of_media_changes,
@@ -250,7 +253,8 @@ fun SettingsScreen(
                             decreaseValueId = R.string.decrease_number_of_media_changes,
                             onChange = {
                                 onCounterChange(Const.MEDIA_CHANGES_HISTORY_KEY, it)
-                            })
+                            }
+                        )
 
                         SettingsCounterRow(
                             stringId = R.string.number_of_link_changes,
@@ -259,7 +263,8 @@ fun SettingsScreen(
                             decreaseValueId = R.string.decrease_number_of_link_changes,
                             onChange = {
                                 onCounterChange(Const.LINK_CHANGES_HISTORY_KEY, it)
-                            })
+                            }
+                        )
 
                         Spacer(modifier = Modifier.height(8.dp))
                     }
@@ -273,9 +278,9 @@ fun SettingsScreen(
                     backgroundColor = Color.Transparent
                 ) {
                     Box(
-                       modifier = Modifier
-                           .fillMaxWidth()
-                           .wrapContentHeight()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
                     ) {
                         Box(
                             modifier = Modifier
@@ -331,9 +336,9 @@ fun SettingsScreen(
                                         colors = ExposedDropdownMenuDefaults.textFieldColors(
                                             focusedIndicatorColor = Color.Transparent,
                                             unfocusedIndicatorColor = Color.Transparent,
-                                            backgroundColor = MaterialTheme.colors.light,
+                                            backgroundColor = MaterialTheme.colors.light
 
-                                            ),
+                                        ),
                                         shape = RoundedCornerShape(radius),
                                         textStyle = MaterialTheme.typography.body2
                                     )
@@ -356,7 +361,7 @@ fun SettingsScreen(
                                                 }) {
                                                     Text(
                                                         text = selectedOption,
-                                                        style  = MaterialTheme.typography.body2
+                                                        style = MaterialTheme.typography.body2
                                                     )
                                                 }
                                             }
@@ -364,7 +369,6 @@ fun SettingsScreen(
                                     }
                                 }
                             }
-
 
                             /*Row(
                                 modifier = Modifier
@@ -414,7 +418,7 @@ fun SettingsScreen(
                                 .padding(screenPadding)
                                 .clickable { onTermsClick() },
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
                                 text = stringResource(id = R.string.terms),
@@ -430,7 +434,6 @@ fun SettingsScreen(
                         }
                     }
                 }
-
 
                 val text = stringResource(id = R.string.copyright)
                 val year = Calendar.getInstance().get(Calendar.YEAR)
@@ -457,14 +460,18 @@ fun SettingsScreenPreview() {
         fullName = "Florian Hermes",
         email = "florian.hermes@email.com",
         profilePictureUrl = "",
-        languages = listOf("English", "Deutsch", "Українська"),
+        languages = listOf("English", "Deutsch", "Українська")
     )
-
 
     WriterMeTheme {
         SettingsScreen(
             MutableStateFlow(state),
-            {}, {}, {}, {_, _, ->}, {}, {}
+            {},
+            {},
+            {},
+            { _, _ -> },
+            {},
+            {}
         )
     }
 }

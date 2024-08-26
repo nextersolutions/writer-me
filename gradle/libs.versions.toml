@@ -57,6 +57,7 @@ parse = "4.3.0"
 skrape = "1.3.0-alpha.1"
 realmGradlePlugin = "10.17.0"
 realm = "1.16.0"
+chipTextfield = "0.4.9"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -143,6 +144,8 @@ skrape-it = { module = "it.skrape:skrapeit", version.ref = "skrape" }
 realm-plugin = { module = "io.realm.kotlin:gradle-plugin", version.ref = "realm" }
 realm-base = { module = "io.realm.kotlin:library-base", version.ref = "realm" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
+chip-textfield = { module = "io.github.dokar3:chiptextfield", version.ref = "chipTextfield" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "android" }

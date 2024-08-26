@@ -30,11 +30,15 @@ fun Long.toTime(): String {
         } else {
             val rem = if (remainder < 10) {
                 "0$remainder"
-            } else remainder.toString()
+            } else {
+                remainder.toString()
+            }
 
             if (quotient > 0) {
                 rem
-            } else "0:$rem"
+            } else {
+                "0:$rem"
+            }
         }
 
         i++

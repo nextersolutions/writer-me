@@ -151,15 +151,15 @@ fun HomeScreen(
             bottomBar = {
                 BottomAppBar(
                     modifier = Modifier.clip(
-                            RoundedCornerShape(
-                                dimensionResource(id = R.dimen.big_radius)
-                            )
-                        ),
+                        RoundedCornerShape(
+                            dimensionResource(id = R.dimen.big_radius)
+                        )
+                    ),
                     backgroundColor = MaterialTheme.colors.backgroundGrey,
-                    cutoutShape = fabShape,
+                    cutoutShape = fabShape
 
                 ) {
-                    BottomNavigation (
+                    BottomNavigation(
                         backgroundColor = Color.Transparent,
                         elevation = 0.dp
                     ) {
@@ -216,7 +216,6 @@ fun HomeScreen(
                 }
             }
         ) {
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -228,7 +227,7 @@ fun HomeScreen(
                     )
                     .verticalScroll(scrollState)
             ) {
-                Row (
+                Row(
                     modifier = Modifier
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -328,9 +327,11 @@ fun HomeScreen(
                                         surface = MaterialTheme.colors.light,
                                         background = Color.Blue
                                     ),
-                                    shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(
-                                        dimensionResource(id = R.dimen.small_radius)
-                                    ))
+                                    shapes = MaterialTheme.shapes.copy(
+                                        medium = RoundedCornerShape(
+                                            dimensionResource(id = R.dimen.small_radius)
+                                        )
+                                    )
                                 ) {
                                     ExposedDropdownMenu(
                                         expanded = isExpanded,
@@ -349,8 +350,10 @@ fun HomeScreen(
                                                 Text(
                                                     text = if (item.isImportant) {
                                                         stringResource(id = R.string.not_important)
-                                                    } else stringResource(id = R.string.important),
-                                                    style  = MaterialTheme.typography.body1
+                                                    } else {
+                                                        stringResource(id = R.string.important)
+                                                    },
+                                                    style = MaterialTheme.typography.body1
                                                 )
 
                                                 Icon(
@@ -373,7 +376,7 @@ fun HomeScreen(
                                             ) {
                                                 Text(
                                                     text = stringResource(id = R.string.delete),
-                                                    style  = MaterialTheme.typography.body1
+                                                    style = MaterialTheme.typography.body1
                                                 )
 
                                                 Icon(
@@ -416,7 +419,9 @@ fun HomeScreenPreview() {
                 ),
                 History(
                     Component(
-                        note1, calendar.time, "Meeting with Anna"
+                        note1,
+                        calendar.time,
+                        "Meeting with Anna"
                     )
                 )
             )
@@ -435,9 +440,11 @@ fun HomeScreenPreview() {
             }
         )
 
-        this.content.add(History(
-            Component(note2, "It’s all started with a post I saw on the Instagram.")
-        ))
+        this.content.add(
+            History(
+                Component(note2, "It’s all started with a post I saw on the Instagram.")
+            )
+        )
     }
 
     val note3 = Note()
@@ -452,9 +459,11 @@ fun HomeScreenPreview() {
             }
         )
 
-        this.content.add(History(
-            Component(note3, "It’s all started with a post I saw on the Instagram.")
-        ))
+        this.content.add(
+            History(
+                Component(note3, "It’s all started with a post I saw on the Instagram.")
+            )
+        )
     }
 
     val note4 = Note()

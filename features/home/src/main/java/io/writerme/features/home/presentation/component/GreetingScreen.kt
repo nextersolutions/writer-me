@@ -51,7 +51,6 @@ import kotlinx.coroutines.launch
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun GreetingScreen(proceedToNextScreen: () -> Unit) {
-
     val writerMe = stringResource(id = R.string.app_name)
     val ideas = stringResource(id = R.string.ideas)
 
@@ -88,7 +87,7 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
     )
 
     LaunchedEffect(
-        key1 = null,
+        key1 = null
     ) {
         launch {
             delay(500)
@@ -110,7 +109,7 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
             writerMe.forEachIndexed { charIndex, _ ->
                 writerText = writerMe.substring(
                     startIndex = 0,
-                    endIndex = charIndex + 1,
+                    endIndex = charIndex + 1
                 )
                 delay(120)
             }
@@ -120,7 +119,7 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
             ideas.forEachIndexed { charIndex, _ ->
                 ideasText = ideas.substring(
                     startIndex = 0,
-                    endIndex = charIndex + 1,
+                    endIndex = charIndex + 1
                 )
                 delay(90)
             }
@@ -141,7 +140,10 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
             modifier = Modifier.fillMaxSize()
         ) {
             val shape = RoundedCornerShape(
-                topStart = 230.dp, topEnd = 230.dp, bottomEnd = 230.dp, bottomStart = 230.dp
+                topStart = 230.dp,
+                topEnd = 230.dp,
+                bottomEnd = 230.dp,
+                bottomStart = 230.dp
             )
 
             Box(
@@ -228,7 +230,6 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
         }
     }
 }
-
 
 @Preview
 @Composable

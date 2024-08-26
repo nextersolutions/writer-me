@@ -40,6 +40,7 @@ object FormatUtils {
     const val nameMaxLength = 20
     const val nameMinLength = 2
     const val cardLength = 16
+    const val animationDuration = 300
 
     fun getNumeric(value: String, length: Int): String {
         if (value.isNotEmpty() && value.length >= length) {

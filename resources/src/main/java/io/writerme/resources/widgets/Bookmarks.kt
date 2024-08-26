@@ -80,7 +80,7 @@ object Bookmarks {
                         onClick = onClick
                     )
                     .shadow(GRID_125, shape),
-                backgroundColor = WriterMeTheme.colors.dialogBackground,
+                backgroundColor = WriterMeTheme.colors.dialogBackground
             ) {
                 Box(
                     modifier = Modifier
@@ -91,7 +91,9 @@ object Bookmarks {
                         Modifier
                             .height(height)
                             .fillMaxWidth()
-                    } else Modifier.fillMaxWidth()
+                    } else {
+                        Modifier.fillMaxWidth()
+                    }
 
                     AnimatedVisibility(visible = true) {
                         if (link.mediaUrl == null) {
