@@ -1,4 +1,4 @@
-package io.writerme.app.ui.screen
+package io.writerme.features.home.presentation.component
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
@@ -40,17 +40,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import io.writerme.app.R
-import io.writerme.app.ui.theme.WriterMeTheme
-import io.writerme.app.ui.theme.light
-import io.writerme.app.ui.theme.strokeLight
+import io.writerme.core.common.FormatUtils.EMPTY
+import io.writerme.core.common.FormatUtils.SECOND
+import io.writerme.core.common.FormatUtils.VALUE_1
+import io.writerme.core.common.FormatUtils.ZERO
+import io.writerme.resources.R
+import io.writerme.resources.common.Dimens.GRID_120
+import io.writerme.resources.common.Dimens.GRID_2
+import io.writerme.resources.common.Dimens.GRID_20
+import io.writerme.resources.common.Dimens.GRID_230
+import io.writerme.resources.common.Dimens.GRID_24
+import io.writerme.resources.common.Dimens.GRID_34
+import io.writerme.resources.common.Dimens.GRID_355
+import io.writerme.resources.common.Dimens.GRID_400
+import io.writerme.resources.common.Dimens.GRID_55
+import io.writerme.resources.themes.AppTheme
+import io.writerme.resources.themes.FONT_40
+import io.writerme.resources.themes.WriterMeTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun GreetingScreen(proceedToNextScreen: () -> Unit) {
+fun GreetingComponent(
+    proceedToNextScreen: () -> Unit
+) {
     val writerMe = stringResource(id = R.string.app_name)
     val ideas = stringResource(id = R.string.ideas)
 
@@ -67,11 +81,11 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
     }
 
     var writerText by remember {
-        mutableStateOf("")
+        mutableStateOf(EMPTY)
     }
 
     var ideasText by remember {
-        mutableStateOf("")
+        mutableStateOf(EMPTY)
     }
 
     val topAngle: Float by animateFloatAsState(
@@ -108,8 +122,8 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
 
             writerMe.forEachIndexed { charIndex, _ ->
                 writerText = writerMe.substring(
-                    startIndex = 0,
-                    endIndex = charIndex + 1
+                    startIndex = ZERO,
+                    endIndex = charIndex + VALUE_1
                 )
                 delay(120)
             }
@@ -118,8 +132,8 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
 
             ideas.forEachIndexed { charIndex, _ ->
                 ideasText = ideas.substring(
-                    startIndex = 0,
-                    endIndex = charIndex + 1
+                    startIndex = ZERO,
+                    endIndex = charIndex + VALUE_1
                 )
                 delay(90)
             }
@@ -140,25 +154,31 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
             modifier = Modifier.fillMaxSize()
         ) {
             val shape = RoundedCornerShape(
-                topStart = 230.dp,
-                topEnd = 230.dp,
-                bottomEnd = 230.dp,
-                bottomStart = 230.dp
+                topStart = GRID_230,
+                topEnd = GRID_230,
+                bottomEnd = GRID_230,
+                bottomStart = GRID_230
             )
 
             Box(
                 modifier = Modifier
-                    .offset(x = (-80).dp, y = 55.dp)
-                    .size(height = 400.dp, width = 400.dp)
+                    .offset(x = (-80).dp, y = GRID_55)
+                    .size(GRID_400)
             ) {
-                val color = MaterialTheme.colors.strokeLight
+                val color = WriterMeTheme.colors.strokeLight
 
                 this@Column.AnimatedVisibility(
                     visible = hasImageAnimationStarted,
                     enter = slideInHorizontally(
-                        animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+                        animationSpec = tween(
+                            durationMillis = SECOND.toInt(),
+                            easing = LinearEasing
+                        )
                     ) + scaleIn(
-                        animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+                        animationSpec = tween(
+                            durationMillis = SECOND.toInt(),
+                            easing = LinearEasing
+                        )
                     ),
                     exit = slideOutHorizontally() + scaleOut(),
                     modifier = Modifier.align(Alignment.Center)
@@ -166,28 +186,28 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
                     Card(
                         modifier = Modifier
                             .wrapContentHeight()
-                            .shadow(20.dp, shape),
+                            .shadow(GRID_20, shape),
                         shape = shape
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.greeting),
                             contentDescription = stringResource(id = R.string.image),
                             modifier = Modifier
-                                .size(width = 355.dp, height = 355.dp),
+                                .size(GRID_355),
                             contentScale = ContentScale.Crop
                         )
                     }
                 }
 
                 Canvas(
-                    modifier = Modifier.size(height = 400.dp, width = 400.dp)
+                    modifier = Modifier.size(GRID_400)
                 ) {
                     drawArc(
                         color = color,
                         startAngle = 10f,
                         sweepAngle = topAngle,
                         useCenter = false,
-                        style = Stroke(width = 2.dp.toPx())
+                        style = Stroke(width = GRID_2.toPx())
                     )
 
                     drawArc(
@@ -195,12 +215,12 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
                         startAngle = 55f,
                         sweepAngle = bottomAngle,
                         useCenter = false,
-                        style = Stroke(width = 2.dp.toPx())
+                        style = Stroke(width = GRID_2.toPx())
                     )
                 }
             }
 
-            val startPadding = 34.dp
+            val startPadding = GRID_34
 
             AnimatedVisibility(
                 visible = true,
@@ -209,9 +229,15 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
             ) {
                 Text(
                     text = writerText,
-                    color = MaterialTheme.colors.light,
-                    style = MaterialTheme.typography.h1.copy(fontSize = 40.sp, fontWeight = FontWeight.Normal),
-                    modifier = Modifier.padding(start = startPadding, top = 120.dp)
+                    color = WriterMeTheme.colors.light,
+                    style = MaterialTheme.typography.h1.copy(
+                        fontSize = FONT_40,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    modifier = Modifier.padding(
+                        start = startPadding,
+                        top = GRID_120
+                    )
                 )
             }
 
@@ -222,9 +248,14 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
             ) {
                 Text(
                     text = ideasText,
-                    color = MaterialTheme.colors.light,
-                    style = MaterialTheme.typography.h3.copy(fontWeight = FontWeight.Normal),
-                    modifier = Modifier.padding(start = startPadding, top = 24.dp)
+                    color = WriterMeTheme.colors.light,
+                    style = MaterialTheme.typography.h3.copy(
+                        fontWeight = FontWeight.Normal
+                    ),
+                    modifier = Modifier.padding(
+                        start = startPadding,
+                        top = GRID_24
+                    )
                 )
             }
         }
@@ -234,7 +265,7 @@ fun GreetingScreen(proceedToNextScreen: () -> Unit) {
 @Preview
 @Composable
 fun GreetingScreenPreview() {
-    WriterMeTheme {
-        GreetingScreen({})
+    AppTheme {
+        GreetingComponent({})
     }
 }

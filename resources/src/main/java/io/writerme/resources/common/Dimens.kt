@@ -157,6 +157,7 @@ object Dimens {
     val GRID_219 = 219.dp
     val GRID_220 = 220.dp
     val GRID_225 = 225.dp
+    val GRID_230 = 230.dp
     val GRID_240 = 240.dp
     val GRID_248 = 248.dp
     val GRID_250 = 250.dp
@@ -176,6 +177,7 @@ object Dimens {
     val GRID_330 = 330.dp
     val GRID_340 = 340.dp
     val GRID_350 = 350.dp
+    val GRID_355 = 355.dp
     val GRID_360 = 360.dp
     val GRID_374 = 374.dp
     val GRID_375 = 375.dp
