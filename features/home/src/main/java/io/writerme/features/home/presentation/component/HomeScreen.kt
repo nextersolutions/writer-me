@@ -1,4 +1,4 @@
-package io.writerme.app.ui.screen
+package io.writerme.features.home.presentation.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -51,56 +49,63 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.realm.kotlin.ext.realmListOf
-import io.writerme.app.R
-import io.writerme.app.data.model.Component
-import io.writerme.app.data.model.ComponentType
-import io.writerme.app.data.model.History
-import io.writerme.app.data.model.Note
 import io.writerme.app.ui.component.HomeFilterTab
-import io.writerme.app.ui.component.Note
-import io.writerme.app.ui.component.ProfileImage
-import io.writerme.app.ui.component.TabSwitcher
-import io.writerme.app.ui.state.HomeState
-import io.writerme.app.ui.theme.WriterMeTheme
-import io.writerme.app.ui.theme.backgroundGrey
-import io.writerme.app.ui.theme.light
-import io.writerme.app.utils.toGreeting
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import io.writerme.core.common.FormatUtils.VALUE_2
+import io.writerme.core.models.enums.ComponentType
+import io.writerme.core.models.viewdata.ComponentViewData
+import io.writerme.core.models.viewdata.HistoryViewData
+import io.writerme.core.models.viewdata.HomeViewData
+import io.writerme.core.models.viewdata.NoteViewData
+import io.writerme.resources.R
+import io.writerme.resources.common.Dimens.GRID_0
+import io.writerme.resources.common.Dimens.GRID_10
+import io.writerme.resources.common.Dimens.GRID_20
+import io.writerme.resources.common.Dimens.GRID_40
+import io.writerme.resources.common.Dimens.GRID_50
+import io.writerme.resources.common.Dimens.GRID_8
+import io.writerme.resources.common.Dimens.GRID_80
+import io.writerme.resources.common.Dimens.WEIGHT_06
+import io.writerme.resources.common.Dimens.bigRadius
+import io.writerme.resources.common.Dimens.screenPadding
+import io.writerme.resources.common.Dimens.smallRadius
+import io.writerme.resources.extensions.toGreeting
+import io.writerme.resources.themes.AppTheme
+import io.writerme.resources.themes.WriterMeTheme
+import io.writerme.resources.widgets.Cards.Note
+import io.writerme.resources.widgets.Cards.TabSwitcher
+import io.writerme.resources.widgets.Images.ProfileImage
+import io.writerme.resources.widgets.Spacers.SpacerHorizontal
+import io.writerme.resources.widgets.Spacers.SpacerVertical
 import java.util.Calendar
 import java.util.Date
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
-    stateFlow: StateFlow<HomeState>,
+    state: HomeViewData,
     toggleSearchMode: () -> Unit,
     openTasksScreen: () -> Unit,
     openBookmarksScreen: () -> Unit,
     openSettingsScreen: () -> Unit,
-    onNoteClick: (Long) -> Unit,
+    onNoteClick: (String) -> Unit,
     createNote: () -> Unit,
     onTabChosen: (HomeFilterTab) -> Unit,
-    toggleImportance: (Long) -> Unit,
-    deleteNote: (Long) -> Unit
+    toggleImportance: (String) -> Unit,
+    deleteNote: (String) -> Unit
 ) {
-    val state = stateFlow.collectAsStateWithLifecycle()
-
     val scaffoldState = rememberScaffoldState()
     val scrollState = rememberScrollState()
-    val padding = dimensionResource(id = R.dimen.screen_padding)
 
-    val fabShape = RoundedCornerShape(50.dp)
+    val fabShape = RoundedCornerShape(GRID_50)
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         Image(
             painter = painterResource(id = R.drawable.background_main),
             contentScale = ContentScale.Crop,
@@ -114,23 +119,23 @@ fun HomeScreen(
             topBar = {
                 TopAppBar(
                     backgroundColor = Color.Transparent,
-                    elevation = 0.dp,
-                    modifier = Modifier.padding(top = 8.dp),
+                    elevation = GRID_0,
+                    modifier = Modifier.padding(top = GRID_8),
                     title = {
                         Text(
                             text = stringResource(id = R.string.app_name),
                             style = MaterialTheme.typography.h2,
-                            color = MaterialTheme.colors.light
+                            color = WriterMeTheme.colors.light
                         )
                     },
                     navigationIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_writer_me),
                             contentDescription = stringResource(id = R.string.back_button),
-                            tint = MaterialTheme.colors.light,
+                            tint = WriterMeTheme.colors.light,
                             modifier = Modifier
-                                .padding(start = padding)
-                                .height(40.dp)
+                                .padding(start = screenPadding)
+                                .height(GRID_40)
                         )
                     }
                 )
@@ -151,17 +156,15 @@ fun HomeScreen(
             bottomBar = {
                 BottomAppBar(
                     modifier = Modifier.clip(
-                        RoundedCornerShape(
-                            dimensionResource(id = R.dimen.big_radius)
-                        )
+                        RoundedCornerShape(bigRadius)
                     ),
-                    backgroundColor = MaterialTheme.colors.backgroundGrey,
+                    backgroundColor = WriterMeTheme.colors.backgroundGrey,
                     cutoutShape = fabShape
 
                 ) {
                     BottomNavigation(
                         backgroundColor = Color.Transparent,
-                        elevation = 0.dp
+                        elevation = GRID_0
                     ) {
                         BottomNavigationItem(
                             selected = true,
@@ -170,7 +173,7 @@ fun HomeScreen(
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_home),
                                     contentDescription = stringResource(id = R.string.home_screen),
-                                    tint = MaterialTheme.colors.light
+                                    tint = WriterMeTheme.colors.light
                                 )
                             }
                         )
@@ -182,12 +185,12 @@ fun HomeScreen(
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_tasks),
                                     contentDescription = stringResource(id = R.string.tasks_screen),
-                                    tint = MaterialTheme.colors.light
+                                    tint = WriterMeTheme.colors.light
                                 )
                             }
                         )
 
-                        Spacer(modifier = Modifier.width(80.dp))
+                        SpacerHorizontal(GRID_80)
 
                         BottomNavigationItem(
                             selected = false,
@@ -196,7 +199,7 @@ fun HomeScreen(
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_bookmark),
                                     contentDescription = stringResource(id = R.string.bookmarks_screen),
-                                    tint = MaterialTheme.colors.light
+                                    tint = WriterMeTheme.colors.light
                                 )
                             }
                         )
@@ -208,7 +211,7 @@ fun HomeScreen(
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_settings),
                                     contentDescription = stringResource(id = R.string.settings_task),
-                                    tint = MaterialTheme.colors.light
+                                    tint = WriterMeTheme.colors.light
                                 )
                             }
                         )
@@ -220,10 +223,10 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        start = padding,
-                        top = padding,
-                        end = padding,
-                        bottom = it.calculateBottomPadding() + padding
+                        start = screenPadding,
+                        top = screenPadding,
+                        end = screenPadding,
+                        bottom = it.calculateBottomPadding() + screenPadding
                     )
                     .verticalScroll(scrollState)
             ) {
@@ -232,51 +235,51 @@ fun HomeScreen(
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (state.value.profilePhotoUrl.isNotEmpty()) {
+                    if (state.profilePhotoUrl.isNotEmpty()) {
                         ProfileImage(
-                            url = state.value.profilePhotoUrl,
+                            url = state.profilePhotoUrl,
                             onClick = openSettingsScreen
                         )
                     }
 
                     Column(
                         modifier = Modifier
-                            .weight(0.6f)
-                            .padding(padding, 0.dp)
+                            .weight(WEIGHT_06)
+                            .padding(screenPadding, GRID_0)
                     ) {
                         Text(
                             text = Date().toGreeting(),
                             style = MaterialTheme.typography.body1,
-                            color = MaterialTheme.colors.light
+                            color = WriterMeTheme.colors.light
                         )
 
                         Text(
-                            text = state.value.firstName,
+                            text = state.firstName,
                             style = MaterialTheme.typography.h1,
-                            color = MaterialTheme.colors.light,
-                            modifier = Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp)
+                            color = WriterMeTheme.colors.light,
+                            modifier = Modifier.padding(top = GRID_10)
                         )
                     }
                 }
 
-                if (state.value.isImportantVisible) {
-                    Spacer(modifier = Modifier.height(padding))
+                if (state.isImportantVisible) {
+                    SpacerVertical(screenPadding)
                 }
 
                 AnimatedVisibility(
-                    visible = state.value.isImportantVisible,
+                    visible = state.isImportantVisible,
                     enter = fadeIn() + scaleIn(),
                     exit = fadeOut() + scaleOut()
                 ) {
                     TabSwitcher(
-                        chosen = state.value.chosenTab,
+                        chosen = state.chosenTab,
                         onItemChosen = onTabChosen
                     )
                 }
 
-                Spacer(modifier = Modifier.height(padding))
+                SpacerHorizontal(screenPadding)
 
-                if (state.value.notes.isEmpty()) {
+                if (state.notes.isEmpty()) {
                     Row(
                         modifier = Modifier.fillMaxSize(),
                         horizontalArrangement = Arrangement.Center,
@@ -285,19 +288,19 @@ fun HomeScreen(
                         Text(
                             text = stringResource(id = R.string.no_notes),
                             textAlign = TextAlign.Center,
-                            color = MaterialTheme.colors.light
+                            color = WriterMeTheme.colors.light
                         )
                     }
                 } else {
                     LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Fixed(2),
-                        verticalItemSpacing = padding,
-                        horizontalArrangement = Arrangement.spacedBy(padding),
+                        columns = StaggeredGridCells.Fixed(VALUE_2),
+                        verticalItemSpacing = screenPadding,
+                        horizontalArrangement = Arrangement.spacedBy(screenPadding),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(900.dp)
                     ) {
-                        itemsIndexed(items = state.value.notes) { index, item ->
+                        itemsIndexed(items = state.notes) { index, item ->
                             var isExpanded by remember {
                                 mutableStateOf(false)
                             }
@@ -324,13 +327,11 @@ fun HomeScreen(
 
                                 MaterialTheme(
                                     colors = MaterialTheme.colors.copy(
-                                        surface = MaterialTheme.colors.light,
+                                        surface = WriterMeTheme.colors.light,
                                         background = Color.Blue
                                     ),
                                     shapes = MaterialTheme.shapes.copy(
-                                        medium = RoundedCornerShape(
-                                            dimensionResource(id = R.dimen.small_radius)
-                                        )
+                                        medium = RoundedCornerShape(smallRadius)
                                     )
                                 ) {
                                     ExposedDropdownMenu(
@@ -359,7 +360,7 @@ fun HomeScreen(
                                                 Icon(
                                                     painter = painterResource(id = R.drawable.ic_heart),
                                                     contentDescription = stringResource(id = R.string.important),
-                                                    modifier = Modifier.size(20.dp),
+                                                    modifier = Modifier.size(GRID_20),
                                                     tint = Color.DarkGray
                                                 )
                                             }
@@ -382,7 +383,7 @@ fun HomeScreen(
                                                 Icon(
                                                     imageVector = Icons.Default.Delete,
                                                     contentDescription = stringResource(id = R.string.delete),
-                                                    modifier = Modifier.size(20.dp),
+                                                    modifier = Modifier.size(GRID_20),
                                                     tint = Color.DarkGray
                                                 )
                                             }
@@ -401,105 +402,80 @@ fun HomeScreen(
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    val note1 = Note()
-
     val calendar = Calendar.getInstance()
     calendar.add(Calendar.HOUR, 5)
 
-    note1.apply {
-        this.title = History(
-            Component(note1, "Instagram Content Plan")
-        )
-        this.isImportant = true
-        this.tags = realmListOf("project")
-        this.content.addAll(
-            listOf(
-                History(
-                    Component(note1, "I hope you enjoy it. Feel free to share your thoughts in the following section...")
-                ),
-                History(
-                    Component(
-                        note1,
-                        calendar.time,
-                        "Meeting with Anna"
+    var note1 = NoteViewData()
+    note1 = note1.copy(
+        title = HistoryViewData(
+            changes = listOf(
+                ComponentViewData(
+                    noteId = note1.id,
+                    content = "Instagram Content Plan"
+                )
+            )
+        ),
+        isImportant = true,
+        tags = listOf("project"),
+        content = listOf(
+            HistoryViewData(
+                changes = listOf(
+                    ComponentViewData(
+                        noteId = note1.id,
+                        content = "I hope you enjoy it. Feel free to share your thoughts in the following section..."
+                    )
+                )
+            ),
+            HistoryViewData(
+                changes = listOf(
+                    ComponentViewData(
+                        noteId = note1.id,
+                        time = calendar.time,
+                        content = "Meeting with Anna"
                     )
                 )
             )
         )
-    }
+    )
 
-    val note2 = Note()
-    note2.apply {
-        this.title = History(
-            Component(note2, "Day #12: Adventure begins")
-        )
-        this.cover = History(
-            Component().apply {
-                this.noteId = note2.id
-                this.type = ComponentType.Image
-            }
-        )
-
-        this.content.add(
-            History(
-                Component(note2, "It’s all started with a post I saw on the Instagram.")
+    var note2 = NoteViewData()
+    note2 = note2.copy(
+        title = HistoryViewData(
+            changes = listOf(
+                ComponentViewData(
+                    noteId = note2.id,
+                    content = "Day #12: Adventure begins"
+                )
             )
-        )
-    }
-
-    val note3 = Note()
-    note3.apply {
-        this.title = History(
-            Component(note3, "Day #12: Adventure begins")
-        )
-        this.cover = History(
-            Component().apply {
-                this.noteId = note3.id
-                this.type = ComponentType.Image
-            }
-        )
-
-        this.content.add(
-            History(
-                Component(note3, "It’s all started with a post I saw on the Instagram.")
+        ),
+        cover = HistoryViewData(
+            changes = listOf(
+                ComponentViewData(
+                    noteId = note2.id,
+                    type = ComponentType.Image
+                )
             )
-        )
-    }
-
-    val note4 = Note()
-    note4.apply {
-        this.title = History(
-            Component(note4, "To buy:")
-        )
-        this.tags = realmListOf("shopping")
-        this.content.addAll(
-            listOf(
-                History(
-                    Component(note4, "bread", false)
-                ),
-                History(
-                    Component(note4, "milk", false)
-                ),
-                History(
-                    Component(note4, "apples", false)
-                ),
-                History(
-                    Component(note4, "Don’t forget to buy everything from grandmas order")
+        ),
+        content = listOf(
+            HistoryViewData(
+                changes = listOf(
+                    ComponentViewData(
+                        noteId = note2.id,
+                        content = "It’s all started with a post I saw on the Instagram."
+                    )
                 )
             )
         )
-    }
+    )
 
-    val main = HomeState(
+    val main = HomeViewData(
         firstName = "Florian",
         chosenTab = HomeFilterTab.All,
         isImportantVisible = true,
-        notes = listOf()
+        notes = listOf(note1, note2)
     )
 
-    val flow = MutableStateFlow(main)
-
-    WriterMeTheme {
-        HomeScreen(stateFlow = flow, {}, {}, {}, {}, {}, {}, {}, {}, {})
+    AppTheme {
+        HomeScreen(state = main, {}, {}, {}, {}, {}, {}, {}, {}, {})
     }
 }
