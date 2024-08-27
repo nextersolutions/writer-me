@@ -25,6 +25,7 @@ object Dimens {
     const val WEIGHT_052 = 0.52f
     const val WEIGHT_056 = 0.56f
     const val WEIGHT_06 = 0.6f
+    const val WEIGHT_065 = 0.65f
     const val WEIGHT_064 = 0.64f
     const val WEIGHT_068 = 0.68f
     const val WEIGHT_07 = 0.7f

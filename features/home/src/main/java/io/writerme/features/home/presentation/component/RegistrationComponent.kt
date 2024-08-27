@@ -1,4 +1,4 @@
-package io.writerme.app.ui.screen
+package io.writerme.features.home.presentation.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -14,13 +14,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -46,30 +43,43 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import io.writerme.app.R
-import io.writerme.app.ui.theme.WriterMeTheme
-import io.writerme.app.ui.theme.dropdownBackground
-import io.writerme.app.ui.theme.light
-import io.writerme.app.ui.theme.lightGrey
-import io.writerme.app.ui.theme.strokeLight
-import io.writerme.app.utils.textFieldBackground
+import io.writerme.core.common.FormatUtils.EMPTY
+import io.writerme.core.common.FormatUtils.SECOND
+import io.writerme.core.common.FormatUtils.VALUE_2
+import io.writerme.core.common.FormatUtils.animationDuration
+import io.writerme.resources.R
+import io.writerme.resources.common.Dimens.GRID_0
+import io.writerme.resources.common.Dimens.GRID_12
+import io.writerme.resources.common.Dimens.GRID_16
+import io.writerme.resources.common.Dimens.GRID_30
+import io.writerme.resources.common.Dimens.GRID_4
+import io.writerme.resources.common.Dimens.GRID_50
+import io.writerme.resources.common.Dimens.GRID_8
+import io.writerme.resources.common.Dimens.WEIGHT_065
+import io.writerme.resources.common.Dimens.WEIGHT_07
+import io.writerme.resources.common.Dimens.WEIGHT_MAX
+import io.writerme.resources.extensions.textFieldBackground
+import io.writerme.resources.themes.AppTheme
+import io.writerme.resources.themes.WriterMeTheme
+import io.writerme.resources.widgets.Spacers.SpacerHorizontal
+import io.writerme.resources.widgets.Spacers.SpacerVertical
+import io.writerme.resources.widgets.Spacers.SpacerWeightView
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun RegistrationScreen(
+fun RegistrationComponent(
     saveName: (String) -> Unit,
     proceedToNextScreen: () -> Unit
 ) {
     val typing = stringResource(id = R.string.typing)
 
     var name by remember {
-        mutableStateOf("")
+        mutableStateOf(EMPTY)
     }
 
     var sentName by remember {
-        mutableStateOf("")
+        mutableStateOf(EMPTY)
     }
 
     var isFirstMessageVisible by remember {
@@ -97,9 +107,9 @@ fun RegistrationScreen(
     }
 
     val send: () -> Unit = {
-        if (name.length > 2) {
+        if (name.length > VALUE_2) {
             sentName = name
-            name = ""
+            name = EMPTY
             isUserMessageVisible = true
 
             saveName(sentName)
@@ -119,6 +129,7 @@ fun RegistrationScreen(
                         counter = 1
                         "$typing..."
                     }
+
                     else -> typing
                 }
                 counter++
@@ -136,7 +147,7 @@ fun RegistrationScreen(
 
     if (isLastMessageVisible) {
         LaunchedEffect(key1 = null) {
-            delay(1000)
+            delay(SECOND)
             proceedToNextScreen()
         }
     }
@@ -153,7 +164,7 @@ fun RegistrationScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(GRID_16)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -163,140 +174,150 @@ fun RegistrationScreen(
                 Image(
                     painter = painterResource(id = R.drawable.ic_writer_me),
                     contentDescription = stringResource(id = R.string.app_name),
-                    modifier = Modifier.size(50.dp)
+                    modifier = Modifier.size(GRID_50)
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                SpacerHorizontal(GRID_8)
 
                 Text(
                     text = stringResource(id = R.string.app_name),
                     style = MaterialTheme.typography.h1,
-                    color = MaterialTheme.colors.light
+                    color = WriterMeTheme.colors.light
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            SpacerWeightView()
 
             AnimatedVisibility(
                 visible = isFirstMessageVisible,
                 enter = slideInHorizontally(
-                    animationSpec = tween(durationMillis = 300)
+                    animationSpec = tween(durationMillis = animationDuration)
                 ) + scaleIn(),
                 exit = slideOutHorizontally() + scaleOut()
             ) {
                 Text(
                     text = stringResource(id = R.string.hi),
-                    style = MaterialTheme.typography.h4.copy(fontWeight = FontWeight.Normal),
-                    color = MaterialTheme.colors.light.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.h4.copy(
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = WriterMeTheme.colors.light.copy(alpha = WEIGHT_07),
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth(WEIGHT_065)
                         .background(
-                            color = MaterialTheme.colors.dropdownBackground,
+                            color = WriterMeTheme.colors.dropdownBackground,
                             shape = RoundedCornerShape(
-                                topStart = 8.dp,
-                                topEnd = 8.dp,
-                                bottomEnd = 0.dp,
-                                bottomStart = 0.dp
+                                topStart = GRID_8,
+                                topEnd = GRID_8,
+                                bottomEnd = GRID_0,
+                                bottomStart = GRID_0
                             )
                         )
-                        .padding(12.dp)
+                        .padding(GRID_12)
 
                 )
             }
 
             if (isSecondMessageVisible) {
-                Spacer(modifier = Modifier.height(4.dp))
+                SpacerVertical(GRID_4)
             }
 
             AnimatedVisibility(
                 visible = isSecondMessageVisible,
                 enter = slideInHorizontally(
-                    animationSpec = tween(durationMillis = 300)
+                    animationSpec = tween(durationMillis = animationDuration)
                 ) + scaleIn(),
                 exit = slideOutHorizontally() + scaleOut()
             ) {
                 Text(
                     text = stringResource(id = R.string.introduce),
-                    style = MaterialTheme.typography.h4.copy(fontWeight = FontWeight.Normal),
-                    color = MaterialTheme.colors.light.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.h4.copy(
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = WriterMeTheme.colors.light.copy(
+                        alpha = WEIGHT_07
+                    ),
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth(WEIGHT_065)
                         .background(
-                            color = MaterialTheme.colors.dropdownBackground,
+                            color = WriterMeTheme.colors.dropdownBackground,
                             shape = RoundedCornerShape(
-                                topStart = 0.dp,
-                                topEnd = 0.dp,
-                                bottomEnd = 8.dp,
-                                bottomStart = 0.dp
+                                topStart = GRID_0,
+                                topEnd = GRID_0,
+                                bottomEnd = GRID_8,
+                                bottomStart = GRID_0
                             )
                         )
-                        .padding(12.dp)
+                        .padding(GRID_12)
 
                 )
             }
 
             if (isUserMessageVisible) {
-                Spacer(modifier = Modifier.height(8.dp))
+                SpacerVertical(GRID_8)
             }
 
             AnimatedVisibility(
                 visible = isUserMessageVisible,
-                enter = slideInHorizontally(initialOffsetX = { it / 2 }) + scaleIn(),
-                exit = slideOutHorizontally(targetOffsetX = { it / 2 }) + scaleOut(),
+                enter = slideInHorizontally(initialOffsetX = { it / VALUE_2 }) + scaleIn(),
+                exit = slideOutHorizontally(targetOffsetX = { it / VALUE_2 }) + scaleOut(),
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text(
                     text = sentName,
-                    style = MaterialTheme.typography.h4.copy(fontWeight = FontWeight.Normal),
+                    style = MaterialTheme.typography.h4.copy(
+                        fontWeight = FontWeight.Normal
+                    ),
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth(WEIGHT_065)
                         .background(
-                            color = MaterialTheme.colors.strokeLight,
+                            color = WriterMeTheme.colors.strokeLight,
                             shape = RoundedCornerShape(
-                                topStart = 8.dp,
-                                topEnd = 8.dp,
-                                bottomEnd = 0.dp,
-                                bottomStart = 8.dp
+                                topStart = GRID_8,
+                                topEnd = GRID_8,
+                                bottomEnd = GRID_0,
+                                bottomStart = GRID_8
                             )
                         )
-                        .padding(12.dp)
+                        .padding(GRID_12)
 
                 )
             }
 
             if (isLastMessageVisible) {
-                Spacer(modifier = Modifier.height(8.dp))
+                SpacerVertical(GRID_8)
             }
 
             AnimatedVisibility(
                 visible = isLastMessageVisible,
                 enter = slideInHorizontally(
-                    animationSpec = tween(durationMillis = 300)
+                    animationSpec = tween(durationMillis = animationDuration)
                 ) + scaleIn(),
                 exit = slideOutHorizontally() + scaleOut()
             ) {
                 Text(
                     text = stringResource(id = R.string.saving),
-                    style = MaterialTheme.typography.h4.copy(fontWeight = FontWeight.Normal),
-                    color = MaterialTheme.colors.light.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.h4.copy(
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = WriterMeTheme.colors.light.copy(alpha = WEIGHT_07),
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth(WEIGHT_065)
                         .background(
-                            color = MaterialTheme.colors.dropdownBackground,
+                            color = WriterMeTheme.colors.dropdownBackground,
                             shape = RoundedCornerShape(
-                                topStart = 8.dp,
-                                topEnd = 8.dp,
-                                bottomEnd = 8.dp,
-                                bottomStart = 0.dp
+                                topStart = GRID_8,
+                                topEnd = GRID_8,
+                                bottomEnd = GRID_8,
+                                bottomStart = GRID_0
                             )
                         )
-                        .padding(12.dp)
+                        .padding(GRID_12)
 
                 )
             }
 
             if (isTyping) {
-                Spacer(modifier = Modifier.height(16.dp))
+                SpacerVertical(GRID_16)
             }
 
             AnimatedVisibility(
@@ -307,11 +328,11 @@ fun RegistrationScreen(
                 Text(
                     text = typingText,
                     style = MaterialTheme.typography.body1,
-                    color = MaterialTheme.colors.lightGrey
+                    color = WriterMeTheme.colors.lightGrey
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            SpacerVertical(GRID_16)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -325,7 +346,7 @@ fun RegistrationScreen(
                     },
                     modifier = Modifier
                         .textFieldBackground()
-                        .weight(1f)
+                        .weight(WEIGHT_MAX)
                         .onKeyEvent {
                             if (it.type == KeyEventType.KeyDown) {
                                 send()
@@ -335,8 +356,10 @@ fun RegistrationScreen(
                             }
                         },
                     singleLine = true,
-                    textStyle = MaterialTheme.typography.body1.copy(color = MaterialTheme.colors.light),
-                    cursorBrush = SolidColor(MaterialTheme.colors.light),
+                    textStyle = MaterialTheme.typography.body1.copy(
+                        color = WriterMeTheme.colors.light
+                    ),
+                    cursorBrush = SolidColor(WriterMeTheme.colors.light),
                     decorationBox = { innerTextField ->
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -346,7 +369,7 @@ fun RegistrationScreen(
                                 Text(
                                     text = stringResource(id = R.string.full_name),
                                     style = MaterialTheme.typography.body1,
-                                    color = MaterialTheme.colors.lightGrey
+                                    color = WriterMeTheme.colors.lightGrey
                                 )
                             }
                             innerTextField()
@@ -362,8 +385,8 @@ fun RegistrationScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_send),
                         contentDescription = stringResource(id = R.string.send_button),
-                        tint = MaterialTheme.colors.lightGrey,
-                        modifier = Modifier.size(30.dp)
+                        tint = WriterMeTheme.colors.lightGrey,
+                        modifier = Modifier.size(GRID_30)
                     )
                 }
             }
@@ -374,7 +397,7 @@ fun RegistrationScreen(
 @Preview
 @Composable
 fun RegistrationScreenPreview() {
-    WriterMeTheme {
-        RegistrationScreen({}, {})
+    AppTheme {
+        RegistrationComponent({}, {})
     }
 }
