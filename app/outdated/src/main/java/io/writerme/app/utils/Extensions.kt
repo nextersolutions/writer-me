@@ -51,21 +51,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
 
-fun ClipboardManager.copyComponentContent(component: Component, context: Context) {
-    val text = when (component.type) {
-        ComponentType.Text, ComponentType.Checkbox, ComponentType.Task -> component.content
-
-        ComponentType.Voice, ComponentType.Link,
-        ComponentType.Video, ComponentType.Image -> component.url
-    }
-
-    this.setText(AnnotatedString(text))
-
-    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
-        Toast.makeText(context, context.resources.getString(R.string.copied), Toast.LENGTH_SHORT)
-            .show()
-}
-
 fun Bitmap.toFile(
     parentFolder: File
 ): Uri? {

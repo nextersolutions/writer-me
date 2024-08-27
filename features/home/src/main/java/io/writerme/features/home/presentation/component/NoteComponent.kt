@@ -1,4 +1,4 @@
-package io.writerme.app.ui.screen
+package io.writerme.features.home.presentation.component
 
 import android.annotation.SuppressLint
 import android.widget.Toast
@@ -13,16 +13,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -55,38 +52,44 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.writerme.app.R
-import io.writerme.app.data.model.Component
-import io.writerme.app.data.model.ComponentType
-import io.writerme.app.data.model.History
-import io.writerme.app.data.model.Note
-import io.writerme.app.ui.component.AddLinkDialogBody
-import io.writerme.app.ui.component.Checkbox
-import io.writerme.app.ui.component.Link
-import io.writerme.app.ui.component.NoteText
-import io.writerme.app.ui.component.TagsBar
-import io.writerme.app.ui.component.Task
-import io.writerme.app.ui.component.TitledDialog
-import io.writerme.app.ui.state.NoteState
-import io.writerme.app.ui.theme.WriterMeTheme
-import io.writerme.app.ui.theme.backgroundGrey
-import io.writerme.app.ui.theme.dropdownBackground
-import io.writerme.app.ui.theme.light
-import io.writerme.app.utils.OnLifecycleEvent
-import io.writerme.app.utils.copyComponentContent
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import io.writerme.core.common.FormatUtils.VALUE_1
+import io.writerme.core.models.enums.ComponentType
+import io.writerme.core.models.viewdata.ComponentViewData
+import io.writerme.core.models.viewdata.HistoryViewData
+import io.writerme.core.models.viewdata.NoteViewData
+import io.writerme.features.home.models.NoteScreenState
+import io.writerme.resources.R
+import io.writerme.resources.common.Dimens.GRID_0
+import io.writerme.resources.common.Dimens.GRID_12
+import io.writerme.resources.common.Dimens.GRID_20
+import io.writerme.resources.common.Dimens.GRID_24
+import io.writerme.resources.common.Dimens.GRID_4
+import io.writerme.resources.common.Dimens.GRID_40
+import io.writerme.resources.common.Dimens.GRID_8
+import io.writerme.resources.common.Dimens.bigRadius
+import io.writerme.resources.common.Dimens.screenPadding
+import io.writerme.resources.common.Dimens.shadowRadius
+import io.writerme.resources.common.Dimens.smallRadius
+import io.writerme.resources.extensions.copyComponentContent
+import io.writerme.resources.themes.AppTheme
+import io.writerme.resources.themes.WriterMeTheme
+import io.writerme.resources.widgets.Bookmarks.Link
+import io.writerme.resources.widgets.Cards.NoteText
+import io.writerme.resources.widgets.Checkbox
+import io.writerme.resources.widgets.Dialogs.AddLinkDialogBody
+import io.writerme.resources.widgets.Dialogs.TitledDialog
+import io.writerme.resources.widgets.Spacers.SpacerHorizontal
+import io.writerme.resources.widgets.Spacers.SpacerVertical
+import io.writerme.resources.widgets.TagsBar
+import io.writerme.resources.widgets.Task
 import java.util.Date
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun NoteScreen(
-    noteState: StateFlow<NoteState>,
+fun NoteComponent(
+    state: NoteScreenState,
     toggleHistoryMode: () -> Unit,
     toggleTopBarDropdownVisibility: () -> Unit,
     updateCoverImage: (String) -> Unit,
@@ -94,7 +97,7 @@ fun NoteScreen(
     addNewTag: (String) -> Unit,
     deleteTag: (String) -> Unit,
     saveChanges: () -> Unit,
-    onComponentChange: (History, Component) -> Unit,
+    onComponentChange: (HistoryViewData, ComponentViewData) -> Unit,
     addNewCheckBox: (Int) -> Unit,
     navigateBack: () -> Unit,
     addImageSection: (String) -> Unit,
@@ -102,21 +105,19 @@ fun NoteScreen(
     dismissDropDown: () -> Unit,
     toggleDropDownHistoryMode: () -> Unit,
     addLinkSection: (String) -> Unit,
-    toggleCheckbox: (Component) -> Unit,
-    deleteSection: (History) -> Unit,
+    toggleCheckbox: (ComponentViewData) -> Unit,
+    deleteSection: (HistoryViewData) -> Unit,
     toggleAddLinkDialogVisibility: () -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
 
     val focusRequester = remember { FocusRequester() }
 
-    val state = noteState.collectAsStateWithLifecycle()
-
-    OnLifecycleEvent(onEvent = { _, event ->
+    /*OnLifecycleEvent(onEvent = { _, event ->
         if (event == Lifecycle.Event.ON_PAUSE) {
             saveChanges()
         }
-    })
+    })*/
 
     val context = LocalContext.current
 
@@ -148,12 +149,12 @@ fun NoteScreen(
             topBar = {
                 TopAppBar(
                     backgroundColor = Color.Transparent,
-                    elevation = 0.dp,
+                    elevation = GRID_0,
                     title = {
                         Text(
                             text = stringResource(id = R.string.edit),
                             style = MaterialTheme.typography.h2,
-                            color = MaterialTheme.colors.light
+                            color = WriterMeTheme.colors.light
                         )
                     },
                     navigationIcon = {
@@ -161,7 +162,7 @@ fun NoteScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_back),
                                 contentDescription = stringResource(id = R.string.back_button),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
                     },
@@ -170,23 +171,21 @@ fun NoteScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_more),
                                 contentDescription = stringResource(id = R.string.more),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
 
                         MaterialTheme(
                             colors = MaterialTheme.colors.copy(
-                                surface = MaterialTheme.colors.dropdownBackground,
+                                surface = WriterMeTheme.colors.dropdownBackground,
                                 background = Color.Blue
                             ),
                             shapes = MaterialTheme.shapes.copy(
-                                medium = RoundedCornerShape(
-                                    dimensionResource(id = R.dimen.small_radius)
-                                )
+                                medium = RoundedCornerShape(smallRadius)
                             )
                         ) {
                             DropdownMenu(
-                                expanded = state.value.isTopBarDropdownVisible,
+                                expanded = state.isTopBarDropdownVisible,
                                 onDismissRequest = toggleTopBarDropdownVisibility,
                                 properties = PopupProperties()
                             ) {
@@ -197,15 +196,15 @@ fun NoteScreen(
                                     Text(
                                         text = stringResource(id = R.string.history_mode),
                                         style = MaterialTheme.typography.subtitle1,
-                                        color = MaterialTheme.colors.light
+                                        color = WriterMeTheme.colors.light
                                     )
 
-                                    Spacer(modifier = Modifier.width(width = 8.dp))
+                                    SpacerHorizontal(GRID_8)
 
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_history),
                                         contentDescription = stringResource(id = R.string.history_mode),
-                                        tint = MaterialTheme.colors.light
+                                        tint = WriterMeTheme.colors.light
                                     )
                                 }
                             }
@@ -218,12 +217,10 @@ fun NoteScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(
-                            RoundedCornerShape(
-                                dimensionResource(id = R.dimen.big_radius)
-                            )
+                            RoundedCornerShape(bigRadius)
                         ),
-                    backgroundColor = MaterialTheme.colors.backgroundGrey,
-                    elevation = dimensionResource(id = R.dimen.shadow)
+                    backgroundColor = WriterMeTheme.colors.backgroundGrey,
+                    elevation = shadowRadius
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -261,7 +258,7 @@ fun NoteScreen(
                         */
 
                         IconButton(onClick = {
-                            if (!state.value.isTagsBarVisible) {
+                            if (!state.isTagsBarVisible) {
                                 showHashtagBar(true)
                             }
                             // focusRequester.requestFocus()
@@ -269,7 +266,7 @@ fun NoteScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_hashtag),
                                 contentDescription = stringResource(id = R.string.add_hashtag_button),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
 
@@ -277,18 +274,22 @@ fun NoteScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_link),
                                 contentDescription = stringResource(id = R.string.add_link_button),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
 
                         IconButton(onClick = {
                             // pending: add voice
-                            Toast.makeText(context, context.resources.getString(R.string.pending), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                context.resources.getString(R.string.pending),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_microphone),
                                 contentDescription = stringResource(id = R.string.add_voice_note_button),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
 
@@ -298,8 +299,8 @@ fun NoteScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_checked),
                                 contentDescription = stringResource(id = R.string.add_tast_button),
-                                modifier = Modifier.size(24.dp),
-                                tint = MaterialTheme.colors.light
+                                modifier = Modifier.size(GRID_24),
+                                tint = WriterMeTheme.colors.light
                             )
                         }
 
@@ -309,15 +310,15 @@ fun NoteScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_camera),
                                 contentDescription = stringResource(id = R.string.add_media_button),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
                     }
                 }
             }
         ) { paddingValues ->
-            val note = state.value.note
-            val padding = dimensionResource(id = R.dimen.screen_padding)
+            val note = state.note
+            val padding = screenPadding
 
             LazyColumn(
                 modifier = Modifier
@@ -328,7 +329,8 @@ fun NoteScreen(
                         end = padding,
                         bottom = paddingValues.calculateBottomPadding() + padding
                     )
-                    .systemBarsPadding().imePadding()
+                    .systemBarsPadding()
+                    .imePadding()
             ) {
                 item {
                     val title = note.title?.newest()
@@ -340,7 +342,7 @@ fun NoteScreen(
                             modifier = Modifier.padding(bottom = padding)
                         ) {
                             image?.let {
-                                io.writerme.app.ui.component.Image(
+                                io.writerme.resources.widgets.Images.Image(
                                     component = it,
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -352,7 +354,7 @@ fun NoteScreen(
                             }
 
                             NoteText(
-                                component = title ?: Component.emptyText(),
+                                component = title ?: ComponentViewData(),
                                 onValueChange = { component ->
                                     note.title?.let { history ->
                                         onComponentChange(history, component)
@@ -375,8 +377,8 @@ fun NoteScreen(
                             IconButton(
                                 modifier = Modifier
                                     .clip(shape)
-                                    .background(MaterialTheme.colors.backgroundGrey)
-                                    .padding(4.dp, 12.dp)
+                                    .background(WriterMeTheme.colors.backgroundGrey)
+                                    .padding(GRID_4, GRID_12)
                                     .shadow(dimensionResource(id = R.dimen.shadow), shape),
                                 onClick = {
                                     addCoverImagePicker.launch("image/*")
@@ -385,13 +387,13 @@ fun NoteScreen(
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_camera),
                                     contentDescription = stringResource(id = R.string.add_cover_image_button),
-                                    modifier = Modifier.size(40.dp),
-                                    tint = MaterialTheme.colors.light
+                                    modifier = Modifier.size(GRID_40),
+                                    tint = WriterMeTheme.colors.light
                                 )
                             }
 
                             NoteText(
-                                component = title ?: Component.emptyText(),
+                                component = title ?: ComponentViewData(),
                                 onValueChange = { component ->
                                     note.title?.let { history ->
                                         onComponentChange(history, component)
@@ -408,16 +410,16 @@ fun NoteScreen(
                 }
 
                 item {
-                    AnimatedVisibility(visible = state.value.note.tags.isNotEmpty()) {
+                    AnimatedVisibility(visible = state.note.tags.isNotEmpty()) {
                         Column {
                             TagsBar(
-                                tags = state.value.note.tags,
+                                tags = state.note.tags,
                                 addNewTag = addNewTag,
                                 deleteTag = deleteTag,
                                 focusRequester = focusRequester
                             )
 
-                            Spacer(modifier = Modifier.height(padding))
+                            SpacerVertical(padding)
                         }
                     }
                 }
@@ -428,7 +430,7 @@ fun NoteScreen(
                         val newest = item.newest()
 
                         newest?.let { component ->
-                            val isExpanded = currentIndex == state.value.expandedDropdownId
+                            val isExpanded = false // currentIndex == state.expandedDropdownId
 
                             ExposedDropdownMenuBox(
                                 expanded = isExpanded,
@@ -438,16 +440,16 @@ fun NoteScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     AnimatedVisibility(
-                                        visible = state.value.isHistoryMode,
+                                        visible = state.isHistoryMode,
                                         modifier = Modifier.align(Alignment.End)
                                     ) {
                                         Icon(
                                             painter = painterResource(id = R.drawable.ic_more),
                                             contentDescription = stringResource(id = R.string.more),
-                                            tint = MaterialTheme.colors.light,
+                                            tint = WriterMeTheme.colors.light,
                                             modifier = Modifier
-                                                .padding(0.dp, 0.dp, 0.dp, 8.dp)
-                                                .size(20.dp)
+                                                .padding(bottom = GRID_8)
+                                                .size(GRID_20)
                                                 .clickable {
                                                     showDropdown(currentIndex)
                                                 }
@@ -463,10 +465,13 @@ fun NoteScreen(
                                                 }
                                             )
                                         }
+
                                         ComponentType.Checkbox -> {
                                             Checkbox(
                                                 component = component,
-                                                modifier = Modifier.animateItemPlacement().padding(start = padding),
+                                                modifier = Modifier
+                                                    .animateItemPlacement()
+                                                    .padding(start = padding),
                                                 onValueChange = {
                                                     onComponentChange(item, component)
                                                 },
@@ -481,6 +486,7 @@ fun NoteScreen(
                                                 }
                                             )
                                         }
+
                                         ComponentType.Voice -> {}
                                         ComponentType.Task -> {
                                             Task(
@@ -491,6 +497,7 @@ fun NoteScreen(
                                                 }
                                             )
                                         }
+
                                         ComponentType.Link -> {
                                             Link(
                                                 link = component,
@@ -499,11 +506,13 @@ fun NoteScreen(
                                             )
                                             // TODO: link is not editable, though it should be
                                         }
+
                                         ComponentType.Video -> {
                                             // pending feature
                                         }
+
                                         ComponentType.Image -> {
-                                            io.writerme.app.ui.component.Image(
+                                            io.writerme.resources.widgets.Images.Image(
                                                 component = component
                                             )
                                         }
@@ -512,13 +521,11 @@ fun NoteScreen(
 
                                 MaterialTheme(
                                     colors = MaterialTheme.colors.copy(
-                                        surface = MaterialTheme.colors.light,
+                                        surface = WriterMeTheme.colors.light,
                                         background = Color.Blue
                                     ),
                                     shapes = MaterialTheme.shapes.copy(
-                                        medium = RoundedCornerShape(
-                                            dimensionResource(id = R.dimen.small_radius)
-                                        )
+                                        medium = RoundedCornerShape(smallRadius)
                                     )
                                 ) {
                                     ExposedDropdownMenu(
@@ -526,7 +533,7 @@ fun NoteScreen(
                                         onDismissRequest = { dismissDropDown() },
                                         scrollState = rememberScrollState()
                                     ) {
-                                        if (state.value.isDropDownInHistoryMode) {
+                                        if (state.isDropDownInHistoryMode) {
                                             item.changes.forEach { component ->
                                                 DropdownMenuItem(onClick = {
                                                     onComponentChange(item, component)
@@ -547,13 +554,13 @@ fun NoteScreen(
                                                                 text = component.url,
                                                                 style = MaterialTheme.typography.body1,
                                                                 modifier = Modifier.fillMaxWidth(),
-                                                                maxLines = 1,
+                                                                maxLines = VALUE_1,
                                                                 overflow = TextOverflow.Ellipsis
                                                             )
                                                         }
 
                                                         ComponentType.Image -> {
-                                                            io.writerme.app.ui.component.Image(
+                                                            io.writerme.resources.widgets.Images.Image(
                                                                 component = component
                                                             )
                                                         }
@@ -561,6 +568,7 @@ fun NoteScreen(
                                                         ComponentType.Voice -> {
                                                             // pending
                                                         }
+
                                                         ComponentType.Video -> {
                                                             // pending feature
                                                         }
@@ -591,7 +599,7 @@ fun NoteScreen(
                                                         Icon(
                                                             painter = painterResource(id = R.drawable.ic_history),
                                                             contentDescription = stringResource(id = R.string.copy),
-                                                            modifier = Modifier.size(20.dp),
+                                                            modifier = Modifier.size(GRID_20),
                                                             tint = Color.DarkGray
                                                         )
                                                     }
@@ -611,7 +619,7 @@ fun NoteScreen(
                                                         Icon(
                                                             painter = painterResource(id = R.drawable.ic_history),
                                                             contentDescription = stringResource(id = R.string.copy),
-                                                            modifier = Modifier.size(20.dp),
+                                                            modifier = Modifier.size(GRID_20),
                                                             tint = Color.DarkGray
                                                         )
                                                     }
@@ -622,14 +630,14 @@ fun NoteScreen(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(padding))
+                            SpacerVertical(padding)
                         }
                     }
                 )
             }
         }
 
-        if (state.value.isAddLinkDialogDisplayed) {
+        if (state.isAddLinkDialogDisplayed) {
             TitledDialog(
                 title = stringResource(id = R.string.set_link),
                 onDismiss = toggleAddLinkDialogVisibility,
@@ -647,82 +655,78 @@ fun NoteScreen(
 @Preview
 @Composable
 fun NoteScreenPreview() {
-    val note = Note()
-
-    val text = Component().apply {
-        type = ComponentType.Text
+    val text = ComponentViewData(
+        type = ComponentType.Text,
         content = "Lorem Ipsum is simply dummy text of the printing and typesetting industry..."
-    }
+    )
 
-    val checkbox = Component().apply {
-        type = ComponentType.Checkbox
-        content = "Complete writing post for Instagram"
+    val checkbox = ComponentViewData(
+        type = ComponentType.Checkbox,
+        content = "Complete writing post for Instagram",
         isChecked = true
-    }
+    )
 
-    val checkbox1 = Component().apply {
-        type = ComponentType.Checkbox
-        content = "Complete writing post for Instagram"
+    val checkbox1 = ComponentViewData(
+        type = ComponentType.Checkbox,
+        content = "Complete writing post for Instagram",
         isChecked = true
-    }
+    )
 
-    val checkbox2 = Component().apply {
-        type = ComponentType.Checkbox
-        content = "Complete writing post for Instagram"
+    val checkbox2 = ComponentViewData(
+        type = ComponentType.Checkbox,
+        content = "Complete writing post for Instagram",
         isChecked = true
-    }
+    )
 
-    val task = Component().apply {
-        content = "Meeting with Anna"
-        time = Date()
+    val task = ComponentViewData(
+        content = "Meeting with Anna",
+        time = Date(),
         type = ComponentType.Task
-    }
+    )
 
-    val image = Component().apply {
-        type = ComponentType.Image
+    val image = ComponentViewData(
+        type = ComponentType.Image,
         mediaUrl = ""
-    }
+    )
 
-    val link = Component().apply {
-        type = ComponentType.Link
-        title = "Best resort in Italy you ever dreamed about"
+    val link = ComponentViewData(
+        type = ComponentType.Link,
+        title = "Best resort in Italy you ever dreamed about",
         url = ""
-    }
+    )
 
-    note.apply {
-        title = History()
-        title!!.push(
-            component = Component().apply {
-                title = "Instagram Content Plan for Beginner"
-                type = ComponentType.Text
-            }
-        )
-
-        /*cover.push(
-            component = Component().apply {
-                imageUrl = "some url..."
-                type = ComponentType.Image
-            }
-        )*/
-
-        content.addAll(
-            listOf(
-                History(text),
-                History(checkbox),
-                History(checkbox1),
-                History(checkbox2)
+    val note = NoteViewData(
+        title = HistoryViewData(
+            changes = listOf(
+                ComponentViewData(
+                    title = "Instagram Content Plan for Beginner",
+                    type = ComponentType.Text
+                )
             )
-        )
+        ),
 
-        tags.addAll(listOf("stories", "work"))
-    }
+        content = listOf(
+            HistoryViewData(
+                changes = listOf(text)
+            ),
+            HistoryViewData(
+                changes = listOf(checkbox)
+            ),
+            HistoryViewData(
+                changes = listOf(checkbox1)
+            ),
+            HistoryViewData(
+                changes = listOf(checkbox2)
+            )
+        ),
+        tags = listOf("stories", "work")
+    )
 
-    val noteState = NoteState(note = note)
-    val state = MutableStateFlow(noteState)
+    val noteScreenState = NoteScreenState(note = note)
 
-    WriterMeTheme {
-        NoteScreen(
-            noteState = state,
+    AppTheme {
+        NoteComponent(
+            state = noteScreenState,
             toggleHistoryMode = {},
             toggleTopBarDropdownVisibility = {},
             updateCoverImage = {},

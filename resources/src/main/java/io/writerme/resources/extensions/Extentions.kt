@@ -2,6 +2,9 @@ package io.writerme.resources.extensions
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
+import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +24,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.stringResource
@@ -34,6 +38,8 @@ import io.writerme.app.ui.component.HomeFilterTab
 import io.writerme.core.common.FormatUtils.VALUE_1
 import io.writerme.core.common.FormatUtils.ZERO
 import io.writerme.core.common.GlobalConstants.AppLink.linkTag
+import io.writerme.core.models.enums.ComponentType
+import io.writerme.core.models.viewdata.ComponentViewData
 import io.writerme.resources.R
 import io.writerme.resources.common.Dimens.GRID_0
 import io.writerme.resources.common.Dimens.GRID_1
@@ -211,3 +217,22 @@ fun Modifier.textFieldBackground() =
         .background(WriterMeTheme.colors.fieldDark)
         .padding(horizontal = GRID_16, vertical = GRID_0)
         .height(GRID_40)
+
+fun ClipboardManager.copyComponentContent(
+    component: ComponentViewData,
+    context: Context
+) {
+    val text = when (component.type) {
+        ComponentType.Text, ComponentType.Checkbox, ComponentType.Task -> component.content
+
+        ComponentType.Voice, ComponentType.Link,
+        ComponentType.Video, ComponentType.Image -> component.url
+    }
+
+    this.setText(AnnotatedString(text))
+
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+        Toast.makeText(context, context.resources.getString(R.string.copied), Toast.LENGTH_SHORT)
+            .show()
+    }
+}
