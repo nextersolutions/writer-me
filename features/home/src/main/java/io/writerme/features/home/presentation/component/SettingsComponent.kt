@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -48,29 +47,46 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.writerme.app.R
-import io.writerme.app.ui.component.ProfileImage
-import io.writerme.app.ui.component.SettingsCounterRow
-import io.writerme.app.ui.component.SettingsSectionTitle
-import io.writerme.app.ui.state.SettingsState
-import io.writerme.app.ui.theme.*
-import io.writerme.app.utils.Const
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import io.writerme.core.common.GlobalConstants.HistoryDefaults.LINK_CHANGES_HISTORY_KEY
+import io.writerme.core.common.GlobalConstants.HistoryDefaults.MEDIA_CHANGES_HISTORY_KEY
+import io.writerme.core.common.GlobalConstants.HistoryDefaults.TASK_CHANGES_HISTORY_KEY
+import io.writerme.core.common.GlobalConstants.HistoryDefaults.TEXT_CHANGES_HISTORY_KEY
+import io.writerme.core.common.GlobalConstants.HistoryDefaults.VOICE_CHANGES_HISTORY_KEY
+import io.writerme.core.models.viewdata.SettingsViewData
+import io.writerme.resources.R
+import io.writerme.resources.common.Dimens.GRID_0
+import io.writerme.resources.common.Dimens.GRID_10
+import io.writerme.resources.common.Dimens.GRID_12
+import io.writerme.resources.common.Dimens.GRID_150
+import io.writerme.resources.common.Dimens.GRID_16
+import io.writerme.resources.common.Dimens.GRID_20
+import io.writerme.resources.common.Dimens.GRID_25
+import io.writerme.resources.common.Dimens.GRID_4
+import io.writerme.resources.common.Dimens.GRID_40
+import io.writerme.resources.common.Dimens.GRID_48
+import io.writerme.resources.common.Dimens.GRID_8
+import io.writerme.resources.common.Dimens.WEIGHT_06
+import io.writerme.resources.common.Dimens.bigRadius
+import io.writerme.resources.common.Dimens.blurRadius
+import io.writerme.resources.common.Dimens.screenPadding
+import io.writerme.resources.common.Dimens.shadowRadius
+import io.writerme.resources.themes.AppTheme
+import io.writerme.resources.themes.WriterMeTheme
+import io.writerme.resources.widgets.Cards.SettingsCounterRow
+import io.writerme.resources.widgets.Cards.SettingsSectionTitle
+import io.writerme.resources.widgets.Images.ProfileImage
+import io.writerme.resources.widgets.Spacers.SpacerVertical
 import java.util.Calendar
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SettingsScreen(
-    uiState: StateFlow<SettingsState>,
+fun SettingsComponent(
+    state: SettingsViewData,
     onLanguageChange: (String) -> Unit,
     onDarkModeChange: (Boolean) -> Unit,
     onTermsClick: () -> Unit,
@@ -80,7 +96,6 @@ fun SettingsScreen(
 ) {
     val scrollState = rememberScrollState()
     val scaffoldState = rememberScaffoldState()
-    val state = uiState.collectAsStateWithLifecycle()
 
     val updateProfileImagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -106,12 +121,12 @@ fun SettingsScreen(
             topBar = {
                 TopAppBar(
                     backgroundColor = Color.Transparent,
-                    elevation = 0.dp,
+                    elevation = GRID_0,
                     title = {
                         Text(
                             text = stringResource(id = R.string.settings),
                             style = MaterialTheme.typography.h2,
-                            color = MaterialTheme.colors.light
+                            color = WriterMeTheme.colors.light
                         )
                     },
                     navigationIcon = {
@@ -119,22 +134,20 @@ fun SettingsScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_back),
                                 contentDescription = stringResource(id = R.string.back_button),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
                     }
                 )
             }
         ) {
-            val shape = RoundedCornerShape(dimensionResource(id = R.dimen.big_radius))
+            val shape = RoundedCornerShape(bigRadius)
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
             ) {
-                val screenPadding = dimensionResource(id = R.dimen.screen_padding)
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -142,18 +155,21 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     AnimatedVisibility(visible = true) {
-                        if (state.value.profilePictureUrl.isNotEmpty()) {
+                        if (state.profilePictureUrl.isNotEmpty()) {
                             ProfileImage(
-                                url = state.value.profilePictureUrl,
+                                url = state.profilePictureUrl,
                                 onClick = { updateProfileImagePicker.launch("image/*") }
                             )
                         } else {
                             IconButton(
                                 modifier = Modifier
                                     .clip(shape)
-                                    .background(MaterialTheme.colors.backgroundGrey)
-                                    .padding(4.dp, 12.dp)
-                                    .shadow(dimensionResource(id = R.dimen.shadow), shape),
+                                    .background(WriterMeTheme.colors.backgroundGrey)
+                                    .padding(GRID_4, GRID_12)
+                                    .shadow(
+                                        elevation = shadowRadius,
+                                        shape = shape
+                                    ),
                                 onClick = {
                                     updateProfileImagePicker.launch("image/*")
                                 }
@@ -161,8 +177,8 @@ fun SettingsScreen(
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_camera),
                                     contentDescription = stringResource(id = R.string.add_cover_image_button),
-                                    modifier = Modifier.size(40.dp),
-                                    tint = MaterialTheme.colors.light
+                                    modifier = Modifier.size(GRID_40),
+                                    tint = WriterMeTheme.colors.light
                                 )
                             }
                         }
@@ -170,20 +186,20 @@ fun SettingsScreen(
 
                     Column(
                         modifier = Modifier
-                            .weight(0.6f)
-                            .padding(screenPadding, 0.dp)
+                            .weight(WEIGHT_06)
+                            .padding(horizontal = screenPadding)
                     ) {
                         Text(
-                            text = state.value.fullName,
+                            text = state.fullName,
                             style = MaterialTheme.typography.h1,
-                            color = MaterialTheme.colors.light
+                            color = WriterMeTheme.colors.light
                         )
 
                         Text(
-                            text = state.value.email,
+                            text = state.email,
                             style = MaterialTheme.typography.body1,
-                            color = MaterialTheme.colors.light,
-                            modifier = Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp)
+                            color = WriterMeTheme.colors.light,
+                            modifier = Modifier.padding(top = GRID_10)
                         )
                     }
                 }
@@ -191,10 +207,10 @@ fun SettingsScreen(
                 // TODO: add the dialog to edit email, photo and the full name
 
                 Card(
-                    modifier = Modifier.padding(screenPadding, 8.dp),
-                    shape = RoundedCornerShape(25.dp),
-                    elevation = 20.dp,
-                    backgroundColor = MaterialTheme.colors.cardBackground
+                    modifier = Modifier.padding(screenPadding, GRID_8),
+                    shape = RoundedCornerShape(GRID_25),
+                    elevation = GRID_20,
+                    backgroundColor = WriterMeTheme.colors.cardBackground
                 ) {
                     Column {
                         SettingsSectionTitle(
@@ -203,78 +219,90 @@ fun SettingsScreen(
                         )
 
                         Divider(
-                            modifier = Modifier.padding(screenPadding, 0.dp, screenPadding, screenPadding),
-                            color = MaterialTheme.colors.strokeLight
+                            modifier = Modifier.padding(
+                                start = screenPadding,
+                                end = screenPadding,
+                                bottom = screenPadding
+                            ),
+                            color = WriterMeTheme.colors.strokeLight
                         )
 
                         Text(
                             text = stringResource(id = R.string.changes_history_description),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(screenPadding, 8.dp, screenPadding, 20.dp),
+                                .padding(
+                                    start = screenPadding,
+                                    top = GRID_8,
+                                    end = screenPadding,
+                                    bottom = GRID_20
+                                ),
                             style = MaterialTheme.typography.body2,
-                            color = MaterialTheme.colors.light
+                            color = WriterMeTheme.colors.light
                         )
 
                         SettingsCounterRow(
                             stringId = R.string.number_of_text_changes,
-                            value = state.value.textChanges,
+                            value = state.textChanges,
                             increaseValueId = R.string.increase_number_of_text_changes,
                             decreaseValueId = R.string.decrease_number_of_text_changes,
                             onChange = {
-                                onCounterChange(Const.TEXT_CHANGES_HISTORY_KEY, it)
+                                onCounterChange(TEXT_CHANGES_HISTORY_KEY, it)
                             }
                         )
 
                         SettingsCounterRow(
                             stringId = R.string.number_of_voice_changes,
-                            value = state.value.voiceChanges,
+                            value = state.voiceChanges,
                             increaseValueId = R.string.increase_number_of_voice_changes,
                             decreaseValueId = R.string.decrease_number_of_voice_changes,
                             onChange = {
-                                onCounterChange(Const.VOICE_CHANGES_HISTORY_KEY, it)
+                                onCounterChange(VOICE_CHANGES_HISTORY_KEY, it)
                             }
                         )
 
                         SettingsCounterRow(
                             stringId = R.string.number_of_tasks_changes,
-                            value = state.value.taskChanges,
+                            value = state.taskChanges,
                             increaseValueId = R.string.increase_number_of_tasks_changes,
                             decreaseValueId = R.string.decrease_number_of_tasks_changes,
                             onChange = {
-                                onCounterChange(Const.TASK_CHANGES_HISTORY_KEY, it)
+                                onCounterChange(TASK_CHANGES_HISTORY_KEY, it)
                             }
                         )
 
                         SettingsCounterRow(
                             stringId = R.string.number_of_media_changes,
-                            value = state.value.mediaChanges,
+                            value = state.mediaChanges,
                             increaseValueId = R.string.increase_number_of_media_changes,
                             decreaseValueId = R.string.decrease_number_of_media_changes,
                             onChange = {
-                                onCounterChange(Const.MEDIA_CHANGES_HISTORY_KEY, it)
+                                onCounterChange(MEDIA_CHANGES_HISTORY_KEY, it)
                             }
                         )
 
                         SettingsCounterRow(
                             stringId = R.string.number_of_link_changes,
-                            value = state.value.linkChanges,
+                            value = state.linkChanges,
                             increaseValueId = R.string.increase_number_of_link_changes,
                             decreaseValueId = R.string.decrease_number_of_link_changes,
                             onChange = {
-                                onCounterChange(Const.LINK_CHANGES_HISTORY_KEY, it)
+                                onCounterChange(LINK_CHANGES_HISTORY_KEY, it)
                             }
                         )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        SpacerVertical(GRID_8)
                     }
                 }
 
                 Card(
                     shape = shape,
                     modifier = Modifier
-                        .padding(screenPadding, 8.dp)
-                        .shadow(dimensionResource(id = R.dimen.shadow), shape),
+                        .padding(screenPadding, GRID_8)
+                        .shadow(
+                            elevation = shadowRadius,
+                            shape = shape
+                        ),
                     backgroundColor = Color.Transparent
                 ) {
                     Box(
@@ -285,8 +313,8 @@ fun SettingsScreen(
                         Box(
                             modifier = Modifier
                                 .matchParentSize()
-                                .background(MaterialTheme.colors.cardBackground)
-                                .blur(dimensionResource(id = R.dimen.blur_radius))
+                                .background(WriterMeTheme.colors.cardBackground)
+                                .blur(blurRadius)
                         )
 
                         Column {
@@ -295,21 +323,26 @@ fun SettingsScreen(
                             )
 
                             Divider(
-                                modifier = Modifier.padding(screenPadding, 0.dp, screenPadding, screenPadding),
-                                color = MaterialTheme.colors.strokeLight
+                                modifier = Modifier.padding(
+                                    screenPadding,
+                                    GRID_0,
+                                    screenPadding,
+                                    screenPadding
+                                ),
+                                color = WriterMeTheme.colors.strokeLight
                             )
 
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(screenPadding, 8.dp),
+                                    .padding(screenPadding, GRID_8),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
                                     text = stringResource(id = R.string.language),
                                     style = MaterialTheme.typography.body1,
-                                    color = MaterialTheme.colors.light
+                                    color = WriterMeTheme.colors.light
                                 )
 
                                 var isLanguagesListExpanded by remember {
@@ -318,14 +351,15 @@ fun SettingsScreen(
 
                                 ExposedDropdownMenuBox(
                                     expanded = isLanguagesListExpanded,
-                                    onExpandedChange = { isLanguagesListExpanded = !isLanguagesListExpanded },
+                                    onExpandedChange = {
+                                        isLanguagesListExpanded = !isLanguagesListExpanded
+                                    },
                                     modifier = Modifier
-                                        .width(150.dp)
-                                        .height(48.dp)
+                                        .width(GRID_150)
+                                        .height(GRID_48)
                                 ) {
-                                    val radius = dimensionResource(id = R.dimen.big_radius)
                                     TextField(
-                                        value = state.value.currentLanguage,
+                                        value = state.currentLanguage,
                                         onValueChange = onLanguageChange,
                                         readOnly = true,
                                         trailingIcon = {
@@ -336,25 +370,27 @@ fun SettingsScreen(
                                         colors = ExposedDropdownMenuDefaults.textFieldColors(
                                             focusedIndicatorColor = Color.Transparent,
                                             unfocusedIndicatorColor = Color.Transparent,
-                                            backgroundColor = MaterialTheme.colors.light
+                                            backgroundColor = WriterMeTheme.colors.light
 
                                         ),
-                                        shape = RoundedCornerShape(radius),
+                                        shape = RoundedCornerShape(bigRadius),
                                         textStyle = MaterialTheme.typography.body2
                                     )
 
                                     MaterialTheme(
                                         colors = MaterialTheme.colors.copy(
-                                            surface = MaterialTheme.colors.light,
+                                            surface = WriterMeTheme.colors.light,
                                             background = Color.Blue
                                         ),
-                                        shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(radius))
+                                        shapes = MaterialTheme.shapes.copy(
+                                            medium = RoundedCornerShape(bigRadius)
+                                        )
                                     ) {
                                         ExposedDropdownMenu(
                                             expanded = isLanguagesListExpanded,
                                             onDismissRequest = { isLanguagesListExpanded = false }
                                         ) {
-                                            state.value.languages.forEach { selectedOption ->
+                                            state.languages.forEach { selectedOption ->
                                                 DropdownMenuItem(onClick = {
                                                     onLanguageChange(selectedOption)
                                                     isLanguagesListExpanded = false
@@ -396,10 +432,10 @@ fun SettingsScreen(
                 }
 
                 Card(
-                    modifier = Modifier.padding(screenPadding, 8.dp),
-                    shape = RoundedCornerShape(25.dp),
-                    elevation = 16.dp,
-                    backgroundColor = MaterialTheme.colors.cardBackground
+                    modifier = Modifier.padding(screenPadding, GRID_8),
+                    shape = RoundedCornerShape(GRID_25),
+                    elevation = GRID_16,
+                    backgroundColor = WriterMeTheme.colors.cardBackground
                 ) {
                     Column {
                         SettingsSectionTitle(
@@ -408,8 +444,8 @@ fun SettingsScreen(
                         )
 
                         Divider(
-                            modifier = Modifier.padding(screenPadding, 0.dp, screenPadding, 0.dp),
-                            color = MaterialTheme.colors.strokeLight
+                            modifier = Modifier.padding(horizontal = screenPadding),
+                            color = WriterMeTheme.colors.strokeLight
                         )
 
                         Row(
@@ -423,13 +459,13 @@ fun SettingsScreen(
                             Text(
                                 text = stringResource(id = R.string.terms),
                                 style = MaterialTheme.typography.body1,
-                                color = MaterialTheme.colors.light
+                                color = WriterMeTheme.colors.light
                             )
 
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_globe),
                                 contentDescription = stringResource(id = R.string.globe_icon),
-                                tint = MaterialTheme.colors.light
+                                tint = WriterMeTheme.colors.light
                             )
                         }
                     }
@@ -442,7 +478,7 @@ fun SettingsScreen(
                     text = String.format(text, year),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(0.dp, 16.dp),
+                        .padding(GRID_0, GRID_16),
                     textAlign = TextAlign.Center,
                     color = Color.White,
                     style = MaterialTheme.typography.body1
@@ -455,7 +491,7 @@ fun SettingsScreen(
 @Preview(showBackground = true)
 @Composable
 fun SettingsScreenPreview() {
-    val state = SettingsState(
+    val state = SettingsViewData(
         currentLanguage = "English",
         fullName = "Florian Hermes",
         email = "florian.hermes@email.com",
@@ -463,9 +499,9 @@ fun SettingsScreenPreview() {
         languages = listOf("English", "Deutsch", "Українська")
     )
 
-    WriterMeTheme {
-        SettingsScreen(
-            MutableStateFlow(state),
+    AppTheme {
+        SettingsComponent(
+            state,
             {},
             {},
             {},

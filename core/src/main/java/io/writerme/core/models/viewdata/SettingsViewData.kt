@@ -12,6 +12,7 @@ data class SettingsViewData(
     val textChanges: Int = GlobalConstants.HistoryDefaults.TEXT_CHANGES_HISTORY,
     val taskChanges: Int = GlobalConstants.HistoryDefaults.TASK_CHANGES_HISTORY,
     val linkChanges: Int = GlobalConstants.HistoryDefaults.LINK_CHANGES_HISTORY,
-    val currentLanguage: String = GlobalConstants.SUPPORTED_LANGUAGES[0],
-    val isDarkMode: Boolean = true
+    val currentLanguage: String = GlobalConstants.SUPPORTED_LANGUAGES.first(),
+    val isDarkMode: Boolean = true,
+    var languages: List<String> = listOf()
 )
