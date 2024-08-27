@@ -86,7 +86,7 @@ import java.util.Date
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun HomeScreen(
+fun HomeComponent(
     state: HomeViewData,
     toggleSearchMode: () -> Unit,
     openTasksScreen: () -> Unit,
@@ -476,6 +476,6 @@ fun HomeScreenPreview() {
     )
 
     AppTheme {
-        HomeScreen(state = main, {}, {}, {}, {}, {}, {}, {}, {}, {})
+        HomeComponent(state = main, {}, {}, {}, {}, {}, {}, {}, {}, {})
     }
 }
