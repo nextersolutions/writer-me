@@ -1,17 +1,17 @@
-package io.writerme.app.ui.screen
+package io.writerme.features.home.presentation.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import io.writerme.app.ui.theme.WriterMeTheme
+import io.writerme.resources.themes.AppTheme
 
 @Composable
-fun TaskScreen() {
+fun TaskComponent() {
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun TaskScreenPreview() {
-    WriterMeTheme {
-        TaskScreen()
+    AppTheme {
+        TaskComponent()
     }
 }
