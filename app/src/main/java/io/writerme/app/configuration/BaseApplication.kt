@@ -2,14 +2,14 @@ package io.writerme.app.configuration
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
-import io.writerme.core.contracts.datasources.local.BookmarksLocalDataSource
+import io.writerme.core.contracts.datasources.local.SettingsLocalDataSource
 import javax.inject.Inject
 
 @HiltAndroidApp
 class BaseApplication : Application() {
 
     @Inject
-    var bookmarksLocalDataSource: BookmarksLocalDataSource? = null
+    private var settingsLocalDataSource: SettingsLocalDataSource? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -17,6 +17,6 @@ class BaseApplication : Application() {
 
     override fun onTerminate() {
         super.onTerminate()
-        bookmarksLocalDataSource?.close()
+        settingsLocalDataSource?.close()
     }
 }

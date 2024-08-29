@@ -8,16 +8,14 @@ import io.writerme.core.models.enums.ComponentType
 import io.writerme.core.models.model.BookmarksFolder
 import io.writerme.core.models.model.Component
 import io.writerme.database.common.DbConst.MAIN_BOOKMARK_ID
+import io.writerme.database.extensions.findById
 import javax.inject.Inject
 
 internal class BookmarksLocalDataSourceImpl @Inject constructor(
     private val realm: Realm
 ) : BookmarksLocalDataSource {
     override suspend fun getMainFolder(): BookmarksFolder {
-        val result = realm
-            .query(BookmarksFolder::class, "id == $0", MAIN_BOOKMARK_ID)
-            .first()
-            .find()
+        val result = realm.findById(BookmarksFolder::class, MAIN_BOOKMARK_ID)
 
         return result
             ?: realm.write {
@@ -36,7 +34,7 @@ internal class BookmarksLocalDataSourceImpl @Inject constructor(
         realm.write {
             val _parent = if (parent != null) {
                 findLatest(parent)
-            } else realm.query(BookmarksFolder::class, "id == $0", 0).first().find()
+            } else realm.findById(BookmarksFolder::class, MAIN_BOOKMARK_ID)
 
             var folder = BookmarksFolder().apply {
                 this.name = name
@@ -61,7 +59,7 @@ internal class BookmarksLocalDataSourceImpl @Inject constructor(
     ): Component {
         return realm.write {
             val _parent =
-                parent ?: realm.query(BookmarksFolder::class, "id == $0", 0).first().find()
+                parent ?: realm.findById(BookmarksFolder::class, MAIN_BOOKMARK_ID)
 
             val bookmark = Component().apply {
                 this.type = ComponentType.Link
@@ -97,9 +95,5 @@ internal class BookmarksLocalDataSourceImpl @Inject constructor(
                 this.deleteComponent(bookmark)
             }
         }
-    }
-
-    override fun close() {
-        realm.close()
     }
 }

@@ -9,13 +9,14 @@ import io.writerme.core.common.GlobalConstants.HistoryDefaults.VOICE_CHANGES_HIS
 import io.writerme.core.contracts.datasources.local.SettingsLocalDataSource
 import io.writerme.core.models.model.Settings
 import io.writerme.database.common.DbConst.SETTINGS_ID
+import io.writerme.database.extensions.findById
 import javax.inject.Inject
 
 internal class SettingsLocalDataSourceImpl @Inject constructor(
     private val realm: Realm
 ) : SettingsLocalDataSource {
     override suspend fun getSettings(): Settings {
-        val result = realm.query(Settings::class, "id == $0", SETTINGS_ID).first().find()
+        val result = realm.findById(Settings::class, SETTINGS_ID)
 
         return result
             ?: realm.write {
@@ -37,10 +38,7 @@ internal class SettingsLocalDataSourceImpl @Inject constructor(
 
     override suspend fun updateProfileImage(url: String) {
         realm.write {
-            val settings = this
-                .query(Settings::class, "id == $0", SETTINGS_ID)
-                .first()
-                .find()
+            val settings = this.findById(Settings::class, SETTINGS_ID)
 
             settings?.profilePictureUrl = url
         }
@@ -48,10 +46,7 @@ internal class SettingsLocalDataSourceImpl @Inject constructor(
 
     override suspend fun setCounter(key: String, value: Int) {
         realm.write {
-            val settings = this
-                .query(Settings::class, "id == $0", SETTINGS_ID)
-                .first()
-                .find()
+            val settings = this.findById(Settings::class, SETTINGS_ID)
 
             when (key) {
                 MEDIA_CHANGES_HISTORY_KEY -> settings?.mediaChanges = value
@@ -65,10 +60,7 @@ internal class SettingsLocalDataSourceImpl @Inject constructor(
 
     override suspend fun setDarkMode(isDarkMode: Boolean) {
         realm.write {
-            val settings = this
-                .query(Settings::class, "id == $0", SETTINGS_ID)
-                .first()
-                .find()
+            val settings = this.findById(Settings::class, SETTINGS_ID)
 
             settings?.isDarkMode = isDarkMode
         }
@@ -76,10 +68,7 @@ internal class SettingsLocalDataSourceImpl @Inject constructor(
 
     override suspend fun setLanguage(language: String) {
         realm.write {
-            val settings = this
-                .query(Settings::class, "id == $0", SETTINGS_ID)
-                .first()
-                .find()
+            val settings = this.findById(Settings::class, SETTINGS_ID)
 
             settings?.currentLanguage = language
         }

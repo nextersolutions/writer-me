@@ -3,7 +3,7 @@ package io.writerme.core.contracts.datasources.local
 import io.writerme.core.models.model.BookmarksFolder
 import io.writerme.core.models.model.Component
 
-interface BookmarksLocalDataSource : BaseLocalDataSource {
+interface BookmarksLocalDataSource {
     suspend fun getMainFolder(): BookmarksFolder
     suspend fun getLatest(folder: BookmarksFolder): BookmarksFolder?
     suspend fun createFolder(
