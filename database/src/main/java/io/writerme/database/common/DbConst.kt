@@ -4,7 +4,7 @@ object DbConst {
     const val DB_SCHEMA_VERSION: Long = 0
 
     const val DB_NAME: String = "writer.realm"
-
+    const val WHERE_ID_EQUALS = "id == $0"
     const val MAIN_BOOKMARK_ID = "0"
     const val SETTINGS_ID = "0"
 }
