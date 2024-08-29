@@ -99,7 +99,7 @@ fun NoteComponent(
     saveChanges: () -> Unit,
     onComponentChange: (HistoryViewData, ComponentViewData) -> Unit,
     addNewCheckBox: (Int) -> Unit,
-    navigateBack: () -> Unit,
+    onBack: () -> Unit,
     addImageSection: (String) -> Unit,
     showDropdown: (Int) -> Unit,
     dismissDropDown: () -> Unit,
@@ -158,7 +158,7 @@ fun NoteComponent(
                         )
                     },
                     navigationIcon = {
-                        IconButton(onClick = navigateBack) {
+                        IconButton(onClick = onBack) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_back),
                                 contentDescription = stringResource(id = R.string.back_button),
@@ -736,7 +736,7 @@ fun NoteScreenPreview() {
             saveChanges = {},
             onComponentChange = { _, _ -> },
             addNewCheckBox = {},
-            navigateBack = {},
+            onBack = {},
             addImageSection = {},
             showDropdown = {},
             dismissDropDown = {},

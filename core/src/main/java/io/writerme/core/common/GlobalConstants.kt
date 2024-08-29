@@ -30,11 +30,8 @@ object GlobalConstants {
         const val LINK_CHANGES_HISTORY_KEY = "link_changes"
     }
 
-    const val DB_SCHEMA_VERSION: Long = 0
-
-    const val DB_NAME: String = "writer.realm"
-
-    val SUPPORTED_LANGUAGES = listOf("English", "Українська", "Deutsch", "Español", "Française", "Русский")
+    val SUPPORTED_LANGUAGES =
+        listOf("English", "Українська", "Deutsch", "Español", "Française", "Русский")
 
     object AppLink {
         const val terms = "https://google.com"

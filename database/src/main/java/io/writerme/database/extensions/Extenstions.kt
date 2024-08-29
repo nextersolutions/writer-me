@@ -2,12 +2,13 @@ package io.writerme.database.extensions
 
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
-import io.writerme.core.common.GlobalConstants
 import io.writerme.core.models.model.BookmarksFolder
 import io.writerme.core.models.model.Component
 import io.writerme.core.models.model.History
 import io.writerme.core.models.model.Note
 import io.writerme.core.models.model.Settings
+import io.writerme.database.common.DbConst.DB_NAME
+import io.writerme.database.common.DbConst.DB_SCHEMA_VERSION
 
 fun RealmConfiguration.Companion.default(): RealmConfiguration {
     return RealmConfiguration.Builder(
@@ -19,8 +20,8 @@ fun RealmConfiguration.Companion.default(): RealmConfiguration {
             Settings::class
         )
     )
-        .name(GlobalConstants.DB_NAME)
-        .schemaVersion(GlobalConstants.DB_SCHEMA_VERSION)
+        .name(DB_NAME)
+        .schemaVersion(DB_SCHEMA_VERSION)
         .build()
 }
 
