@@ -11,7 +11,7 @@ import io.writerme.core.common.GlobalConstants.HistoryDefaults
 open class Settings : RealmObject {
     @Index
     @PrimaryKey
-    var id = ZERO
+    var id = ZERO.toString()
 
     var fullName: String = EMPTY
 

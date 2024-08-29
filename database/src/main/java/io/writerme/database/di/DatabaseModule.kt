@@ -6,8 +6,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.realm.kotlin.Realm
 import io.writerme.core.contracts.datasources.local.BookmarksLocalDataSource
+import io.writerme.core.contracts.datasources.local.SettingsLocalDataSource
 import io.writerme.database.extensions.getDefaultInstance
 import io.writerme.database.localdatasource.BookmarksLocalDataSourceImpl
+import io.writerme.database.localdatasource.SettingsLocalDataSourceImpl
 import javax.inject.Singleton
 
 @Module
@@ -25,5 +27,12 @@ object RealmModule {
         realm: Realm
     ): BookmarksLocalDataSource {
         return BookmarksLocalDataSourceImpl(realm)
+    }
+
+    @Provides
+    fun providesSettingsLocalDataSource(
+        realm: Realm
+    ): SettingsLocalDataSource {
+        return SettingsLocalDataSourceImpl(realm)
     }
 }
