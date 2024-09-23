@@ -1,5 +1,6 @@
 package io.writerme.resources.widgets
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -18,6 +19,10 @@ import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -35,6 +40,7 @@ import io.writerme.core.common.FormatUtils.VALUE_1
 import io.writerme.core.models.enums.ComponentType
 import io.writerme.core.models.viewdata.BookmarksFolderViewData
 import io.writerme.core.models.viewdata.ComponentViewData
+import io.writerme.core.models.viewdata.DropdownViewData
 import io.writerme.resources.R
 import io.writerme.resources.common.Dimens.GRID_0
 import io.writerme.resources.common.Dimens.GRID_100
@@ -47,8 +53,8 @@ import io.writerme.resources.common.Dimens.GRID_60
 import io.writerme.resources.common.Dimens.GRID_8
 import io.writerme.resources.themes.AppTheme
 import io.writerme.resources.themes.WriterMeTheme
-import io.writerme.resources.widgets.Bookmarks.Folder
 import io.writerme.resources.widgets.Bookmarks.Link
+import io.writerme.resources.widgets.DropDowns.DropDownMenuWidget
 
 object Bookmarks {
 
@@ -147,34 +153,64 @@ object Bookmarks {
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun Folder(
         folder: BookmarksFolderViewData,
+        onClick: (BookmarksFolderViewData) -> Unit,
+        onDelete: (BookmarksFolderViewData) -> Unit,
         modifier: Modifier = Modifier
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_folder),
-                contentDescription = stringResource(id = R.string.folder_icon)
-            )
+        var isExpanded by remember {
+            mutableStateOf(false)
+        }
 
-            Text(
-                text = folder.name,
-                style = MaterialTheme.typography.body1, // TODO: update typography
-                maxLines = VALUE_1,
-                modifier = Modifier
-                    .width(GRID_100)
-                    .padding(
-                        horizontal = GRID_0,
-                        vertical = GRID_8
-                    ),
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                color = WriterMeTheme.colors.light
+        BackHandler(isExpanded) { isExpanded = false }
+
+        DropDownMenuWidget(
+            isExpanded = isExpanded,
+            onExpandedToggle = {
+                isExpanded = !isExpanded
+            },
+            items = listOf(
+                DropdownViewData(
+                    titleRes = R.string.delete,
+                    iconRes = R.drawable.ic_delete,
+                    onClick = {
+                        onDelete.invoke(folder)
+                    }
+                )
             )
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = modifier.combinedClickable(
+                    onLongClick = { isExpanded = true },
+                    onClick = {
+                        onClick.invoke(folder)
+                    }
+                )
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_folder),
+                    contentDescription = stringResource(id = R.string.folder_icon)
+                )
+
+                Text(
+                    text = folder.name,
+                    style = MaterialTheme.typography.body1, // TODO: update typography
+                    maxLines = VALUE_1,
+                    modifier = Modifier
+                        .width(GRID_100)
+                        .padding(
+                            horizontal = GRID_0,
+                            vertical = GRID_8
+                        ),
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    color = WriterMeTheme.colors.light
+                )
+            }
         }
     }
 }
@@ -187,10 +223,10 @@ fun FolderPreview() {
     val modifier = Modifier.padding(GRID_16)
 
     AppTheme {
-        Folder(
+        /*Folder(
             folder = folder,
             modifier = modifier
-        )
+        )*/
     }
 }
 

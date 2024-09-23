@@ -12,7 +12,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +26,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -99,10 +99,8 @@ fun BookmarksComponent(
     navigateToParentFolder: () -> Unit,
     createBookmark: (String, String, BookmarksFolderViewData) -> Unit,
     createFolder: (String) -> Unit,
-    deleteFolder: (BookmarksFolderViewData) -> Unit,
+    onDeleteFolder: (BookmarksFolderViewData) -> Unit,
     deleteBookmark: (ComponentViewData) -> Unit,
-    toggleFolderDropdown: (Int) -> Unit,
-    toggleBookmarkDropdown: (Int) -> Unit,
     dismissScreen: () -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
@@ -299,72 +297,17 @@ fun BookmarksComponent(
                                 columns = GridCells.Adaptive(GRID_120),
                                 contentPadding = PaddingValues(padding),
                                 content = {
-                                    itemsIndexed(
+                                    items(
                                         items = currentFolder.folders
-                                    ) { index, item ->
-                                        // TODO
-                                        val isExpanded = false
-
-                                        ExposedDropdownMenuBox(
-                                            expanded = isExpanded,
-                                            onExpandedChange = { toggleFolderDropdown(index) }
-                                        ) {
-                                            Folder(
-                                                folder = item,
-                                                modifier = Modifier
-                                                    .combinedClickable(
-                                                        onLongClick = {
-                                                            toggleFolderDropdown(index)
-                                                        },
-                                                        onClick = { onFolderClicked(item) }
-                                                    )
-                                                    .width(GRID_110)
-                                                    .padding(GRID_8)
-                                            )
-
-                                            MaterialTheme(
-                                                colors = MaterialTheme.colors.copy(
-                                                    surface = WriterMeTheme.colors.light,
-                                                    background = Color.Blue
-                                                ),
-                                                shapes = MaterialTheme.shapes.copy(
-                                                    medium = RoundedCornerShape(
-                                                        dimensionResource(id = R.dimen.small_radius)
-                                                    )
-                                                )
-                                            ) {
-                                                ExposedDropdownMenu(
-                                                    expanded = isExpanded,
-                                                    onDismissRequest = { toggleFolderDropdown(index) },
-                                                    scrollState = rememberScrollState()
-                                                ) {
-                                                    DropdownMenuItem(onClick = {
-                                                        deleteFolder(item)
-                                                        toggleFolderDropdown(index)
-                                                    }) {
-                                                        Row(
-                                                            modifier = Modifier.fillMaxWidth(),
-                                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                                            verticalAlignment = Alignment.CenterVertically
-                                                        ) {
-                                                            Text(
-                                                                text = stringResource(id = R.string.delete),
-                                                                style = MaterialTheme.typography.body1
-                                                            )
-
-                                                            Icon(
-                                                                imageVector = Icons.Default.Delete,
-                                                                contentDescription = stringResource(
-                                                                    id = R.string.delete
-                                                                ),
-                                                                modifier = Modifier.size(GRID_20),
-                                                                tint = Color.DarkGray
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
+                                    ) { item ->
+                                        Folder(
+                                            folder = item,
+                                            onClick = onFolderClicked,
+                                            onDelete = onDeleteFolder,
+                                            modifier = Modifier
+                                                .width(GRID_110)
+                                                .padding(GRID_8)
+                                        )
                                     }
                                 }
                             )
@@ -511,7 +454,7 @@ fun BookmarksScreenPreview() {
             navigateToParentFolder = {},
             createBookmark = { _, _, _ -> },
             createFolder = {},
-            deleteFolder = {},
+            onDeleteFolder = {},
             deleteBookmark = {},
             toggleFolderDropdown = {},
             toggleBookmarkDropdown = {},

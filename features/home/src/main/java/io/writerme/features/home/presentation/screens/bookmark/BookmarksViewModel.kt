@@ -1,13 +1,16 @@
 package io.writerme.features.home.presentation.screens.bookmark
 
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.writerme.core.models.viewdata.BookmarksFolderViewData
+import io.writerme.core.models.viewdata.ComponentViewData
 import io.writerme.core.presentation.BaseViewModel
 import io.writerme.core.presentation.EventHandler
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 internal class BookmarksViewModel @Inject constructor(
-
 ) : BaseViewModel<State, Action>(), EventHandler<Event> {
     private val stateLock = Object()
     override val initialState: State
@@ -36,8 +39,78 @@ internal class BookmarksViewModel @Inject constructor(
     override fun obtainEvent(event: Event) {
         when (event) {
             is Event.Init -> reduceInit()
-            Event.OnBack -> TODO()
-            Event.OnToggleFloatingDialog -> TODO()
+            Event.OnBack -> setAction(Action.Back)
+            Event.OnToggleFloatingDialog -> reduceToggleFloatingDialog()
+            is Event.OnCreateBookmark -> reduceCreateBookmark(event.url, event.title, event.parent)
+            is Event.OnCreateFolder -> reduceCreateFolder(event.name)
+            is Event.OnDeleteBookmark -> reduceDeleteBookmark(event.bookmark)
+            is Event.OnDeleteFolder -> reduceDeleteFolder(event.folder)
+            is Event.OnFolderClick -> reduceFolderClick(event.folder)
+            Event.OnNavigateToParentFolder -> reduceNavigateToParent()
+            Event.OnToggleCreateBookmarkDialog -> reduceToggleCreateBookmarkDialog()
+            Event.OnToggleCreateFolderDialog -> reduceToggleCreateFolderDialog()
+            is Event.OnLinkClick -> reduceLinkClick(event.link)
+        }
+    }
+
+    private fun reduceLinkClick(link: ComponentViewData) {
+        // TODO("Not yet implemented")
+    }
+
+    private fun reduceToggleCreateFolderDialog() {
+        viewModelScope.launch {
+            val current = getContentState()
+            updateState(
+                current.copy(
+                    isFolderDialogDisplayed = !current.isFolderDialogDisplayed
+                )
+            )
+        }
+    }
+
+    private fun reduceToggleCreateBookmarkDialog() {
+        viewModelScope.launch {
+            val current = getContentState()
+            updateState(
+                current.copy(
+                    isBookmarkDialogDisplayed = !current.isBookmarkDialogDisplayed
+                )
+            )
+        }
+    }
+
+    private fun reduceNavigateToParent() {
+        // TODO("Not yet implemented")
+    }
+
+    private fun reduceFolderClick(folder: BookmarksFolderViewData) {
+        // TODO("Not yet implemented")
+    }
+
+    private fun reduceDeleteFolder(folder: BookmarksFolderViewData) {
+        //TODO("Not yet implemented")
+    }
+
+    private fun reduceDeleteBookmark(bookmark: ComponentViewData) {
+        // TODO
+    }
+
+    private fun reduceCreateFolder(name: String) {
+        //TODO("Not yet implemented")
+    }
+
+    private fun reduceCreateBookmark(url: String, title: String, parent: BookmarksFolderViewData?) {
+        // TODO("Not yet implemented")
+    }
+
+    private fun reduceToggleFloatingDialog() {
+        viewModelScope.launch {
+            val current = getContentState()
+            updateState(
+                current.copy(
+                    isFloatingDialogShown = !current.isFloatingDialogShown
+                )
+            )
         }
     }
 }

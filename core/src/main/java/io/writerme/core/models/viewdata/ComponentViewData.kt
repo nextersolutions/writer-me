@@ -15,5 +15,6 @@ data class ComponentViewData(
     val time: Date = Date(),
     val isImage: Boolean = true,
     val changeTime: Long = System.currentTimeMillis(),
-    val type: ComponentType = ComponentType.Text
+    val type: ComponentType = ComponentType.Text,
+    val openInIncognitoMode: Boolean = false
 )
