@@ -2,8 +2,8 @@ package io.writerme.app
 
 object Config {
     private const val major = "1"
-    private const val minor = "0"
-    private const val path = "0"
+    private const val minor = "1"
+    private const val path = "4"
     private const val currentTask = "4"
     const val versionName = "$major.$minor.${path}_($currentTask)"
 

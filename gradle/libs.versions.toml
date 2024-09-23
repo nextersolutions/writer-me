@@ -3,7 +3,7 @@ libraryBaseVersion = "1.16.0"
 minSdk = "26"
 targetSdk = "34"
 compileSdk = "34"
-versionCode = "1"
+versionCode = "10"
 kotlinCompiler = "1.5.15"
 
 coreKtx = "1.13.1"
