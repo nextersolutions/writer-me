@@ -31,8 +31,8 @@ import io.writerme.resources.themes.WriterMeTheme
 object DropDowns {
     @Composable
     fun DropDownMenuWidget(
-        content: @Composable () -> Unit,
-        items: List<DropdownViewData>
+        items: List<DropdownViewData>,
+        content: @Composable () -> Unit
     ) {
         var isExpanded by remember {
             mutableStateOf(false)

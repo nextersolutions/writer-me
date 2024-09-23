@@ -66,7 +66,7 @@ data object BookmarksScreen : BaseScreen() {
                                 Event.OnDeleteFolder(it)
                             )
                         },
-                        deleteBookmark = {
+                        onDeleteBookmark = {
                             viewModel.obtainEvent(
                                 Event.OnDeleteBookmark(it)
                             )

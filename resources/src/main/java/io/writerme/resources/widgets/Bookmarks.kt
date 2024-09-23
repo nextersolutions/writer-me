@@ -63,7 +63,7 @@ object Bookmarks {
     fun Link(
         link: ComponentViewData,
         onClick: () -> Unit,
-        onLongClick: () -> Unit,
+        onDelete: () -> Unit,
         modifier: Modifier = Modifier,
         height: Dp = GRID_0
     ) {
@@ -77,76 +77,98 @@ object Bookmarks {
                 onNotGrantedMessage = R.string.we_wont_load_images
             )*/
 
-            Card(
-                shape = shape,
-                modifier = modifier
-                    .wrapContentHeight()
-                    .combinedClickable(
-                        onLongClick = onLongClick,
-                        onClick = onClick
+            var isExpanded by remember {
+                mutableStateOf(false)
+            }
+
+            BackHandler(isExpanded) { isExpanded = false }
+
+            DropDownMenuWidget(
+                isExpanded = isExpanded,
+                onExpandedToggle = {
+                    isExpanded = !isExpanded
+                },
+                items = listOf(
+                    DropdownViewData(
+                        titleRes = R.string.delete,
+                        iconRes = R.drawable.ic_delete,
+                        onClick = onDelete
                     )
-                    .shadow(GRID_125, shape),
-                backgroundColor = WriterMeTheme.colors.dialogBackground
+                )
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                Card(
+                    shape = shape,
+                    modifier = modifier
                         .wrapContentHeight()
+                        .combinedClickable(
+                            onLongClick = {
+                                isExpanded = true
+                            },
+                            onClick = onClick
+                        )
+                        .shadow(GRID_125, shape),
+                    backgroundColor = WriterMeTheme.colors.dialogBackground
                 ) {
-                    val imageModifier = if (height > GRID_0) {
-                        Modifier
-                            .height(height)
-                            .fillMaxWidth()
-                    } else {
-                        Modifier.fillMaxWidth()
-                    }
-
-                    AnimatedVisibility(visible = true) {
-                        if (link.mediaUrl == null) {
-                            Image(
-                                painter = painterResource(id = R.drawable.link),
-                                contentDescription = null,
-                                modifier = imageModifier,
-                                contentScale = ContentScale.Fit
-                            )
-                        }
-
-                        if (link.mediaUrl != null) {
-                            AsyncImage(
-                                model = link.mediaUrl,
-                                contentDescription = link.content,
-                                modifier = imageModifier,
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(GRID_48)
-                            .align(Alignment.BottomStart)
-                            .padding(GRID_12, GRID_0, GRID_12, GRID_12)
-                            .clip(
-                                RoundedCornerShape(GRID_25)
-                            )
+                            .wrapContentHeight()
                     ) {
+                        val imageModifier = if (height > GRID_0) {
+                            Modifier
+                                .height(height)
+                                .fillMaxWidth()
+                        } else {
+                            Modifier.fillMaxWidth()
+                        }
+
+                        AnimatedVisibility(visible = true) {
+                            if (link.mediaUrl == null) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.link),
+                                    contentDescription = null,
+                                    modifier = imageModifier,
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+
+                            if (link.mediaUrl != null) {
+                                AsyncImage(
+                                    model = link.mediaUrl,
+                                    contentDescription = link.content,
+                                    modifier = imageModifier,
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+
                         Box(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .background(WriterMeTheme.colors.lightGrey)
-                                .blur(GRID_60)
-                        )
+                                .fillMaxWidth()
+                                .height(GRID_48)
+                                .align(Alignment.BottomStart)
+                                .padding(GRID_12, GRID_0, GRID_12, GRID_12)
+                                .clip(
+                                    RoundedCornerShape(GRID_25)
+                                )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(WriterMeTheme.colors.lightGrey)
+                                    .blur(GRID_60)
+                            )
 
-                        Text(
-                            text = link.title.ifEmpty { link.url },
-                            style = MaterialTheme.typography.body1,
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .padding(GRID_8, GRID_0),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                            Text(
+                                text = link.title.ifEmpty { link.url },
+                                style = MaterialTheme.typography.body1,
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .padding(GRID_8, GRID_0),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
             }

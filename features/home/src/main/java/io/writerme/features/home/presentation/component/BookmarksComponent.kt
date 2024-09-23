@@ -21,19 +21,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.FabPosition
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
@@ -42,8 +37,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -67,10 +60,8 @@ import io.writerme.resources.common.Dimens.GRID_1
 import io.writerme.resources.common.Dimens.GRID_110
 import io.writerme.resources.common.Dimens.GRID_12
 import io.writerme.resources.common.Dimens.GRID_120
-import io.writerme.resources.common.Dimens.GRID_130
 import io.writerme.resources.common.Dimens.GRID_15
 import io.writerme.resources.common.Dimens.GRID_150
-import io.writerme.resources.common.Dimens.GRID_20
 import io.writerme.resources.common.Dimens.GRID_40
 import io.writerme.resources.common.Dimens.GRID_70
 import io.writerme.resources.common.Dimens.GRID_8
@@ -100,7 +91,7 @@ fun BookmarksComponent(
     createBookmark: (String, String, BookmarksFolderViewData) -> Unit,
     createFolder: (String) -> Unit,
     onDeleteFolder: (BookmarksFolderViewData) -> Unit,
-    deleteBookmark: (ComponentViewData) -> Unit,
+    onDeleteBookmark: (ComponentViewData) -> Unit,
     dismissScreen: () -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
@@ -321,66 +312,18 @@ fun BookmarksComponent(
                             content = {
                                 val links = currentFolder.bookmarks
 
-                                itemsIndexed(
+                                items(
                                     items = links
-                                ) { index, item ->
-                                    // TODO: !!!!!!!!!!!!!!
-                                    val isExpanded = false
-
-                                    ExposedDropdownMenuBox(
-                                        expanded = isExpanded,
-                                        onExpandedChange = { toggleBookmarkDropdown(index) }
-                                    ) {
-                                        Link(
-                                            link = item,
-                                            onClick = { onLinkClicked(item) },
-                                            onLongClick = { toggleBookmarkDropdown(index) },
-                                            modifier = Modifier
-                                                .padding(GRID_8)
-                                                .clickable(enabled = false, onClick = {}),
-                                            height = GRID_130
-                                        )
-
-                                        MaterialTheme(
-                                            colors = MaterialTheme.colors.copy(
-                                                surface = WriterMeTheme.colors.light
-                                            ),
-                                            shapes = MaterialTheme.shapes.copy(
-                                                medium = RoundedCornerShape(
-                                                    dimensionResource(id = R.dimen.small_radius)
-                                                )
-                                            )
-                                        ) {
-                                            ExposedDropdownMenu(
-                                                expanded = isExpanded,
-                                                onDismissRequest = { toggleBookmarkDropdown(index) },
-                                                scrollState = rememberScrollState()
-                                            ) {
-                                                DropdownMenuItem(onClick = {
-                                                    deleteBookmark(item)
-                                                    toggleBookmarkDropdown(index)
-                                                }) {
-                                                    Row(
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                                        verticalAlignment = Alignment.CenterVertically
-                                                    ) {
-                                                        Text(
-                                                            text = stringResource(id = R.string.delete),
-                                                            style = MaterialTheme.typography.body1
-                                                        )
-
-                                                        Icon(
-                                                            imageVector = Icons.Default.Delete,
-                                                            contentDescription = stringResource(id = R.string.delete),
-                                                            modifier = Modifier.size(GRID_20),
-                                                            tint = Color.DarkGray
-                                                        )
-                                                    }
-                                                }
-                                            }
+                                ) { item ->
+                                    Link(
+                                        link = item,
+                                        onClick = {
+                                            onLinkClicked.invoke(item)
+                                        },
+                                        onDelete = {
+                                            onDeleteBookmark.invoke(item)
                                         }
-                                    }
+                                    )
                                 }
                             }
                         )
@@ -455,9 +398,7 @@ fun BookmarksScreenPreview() {
             createBookmark = { _, _, _ -> },
             createFolder = {},
             onDeleteFolder = {},
-            deleteBookmark = {},
-            toggleFolderDropdown = {},
-            toggleBookmarkDropdown = {},
+            onDeleteBookmark = {},
             dismissScreen = {}
         )
     }
