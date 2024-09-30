@@ -1,12 +1,16 @@
-package io.writerme.app.net
+package io.writerme.network.utils
 
+import io.writerme.core.contracts.utils.MetaTagScraper
+import io.writerme.core.models.dto.MetaTagsDto
 import it.skrape.core.htmlDocument
-import it.skrape.fetcher.*
+import it.skrape.fetcher.AsyncFetcher
+import it.skrape.fetcher.extractIt
+import it.skrape.fetcher.skrape
 import it.skrape.selects.html5.meta
 
-class MetaTagScraper {
+internal class MetaTagScraperImpl : MetaTagScraper {
 
-    protected data class TempMetaTags(
+    private data class TempMetaTags(
         var ogImage: String? = null,
         var ogTitle: String? = null,
         var ogUrl: String? = null,
@@ -17,7 +21,7 @@ class MetaTagScraper {
         var twitterUrl: String? = null
     )
 
-    suspend fun scrape(givenUrl: String): MetaTags {
+    override suspend fun scrape(givenUrl: String): MetaTagsDto {
 
         val tags = skrape(AsyncFetcher) {
             request {

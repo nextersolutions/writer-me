@@ -49,9 +49,11 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     kapt(libs.hilt.compiler)
 
-    implementation(libs.parse.sdk)
+    /*implementation(libs.parse.sdk)
     implementation(libs.parse.ktx)
-    implementation(libs.parse.coroutines)
+    implementation(libs.parse.coroutines)*/
+
+    implementation(libs.skrape.it)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
