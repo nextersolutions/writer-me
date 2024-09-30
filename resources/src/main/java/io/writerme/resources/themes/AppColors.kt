@@ -14,7 +14,8 @@ data class AppColors(
     val dropdownBackground: Color,
     val fieldDark: Color,
     val backgroundGrey: Color,
-    val lightTransparent: Color
+    val lightTransparent: Color,
+    val primaryText: Color
 )
 
 val basePalette = AppColors(
@@ -29,5 +30,6 @@ val basePalette = AppColors(
     dropdownBackground = Color(0xF2292D32),
     fieldDark = Color(0x40000000),
     backgroundGrey = Color(0xA66B6A6A),
-    lightTransparent = Color(0x26D9D9D9)
+    lightTransparent = Color(0x26D9D9D9),
+    primaryText = Color(0xACFFFFFF)
 )

@@ -1,9 +1,12 @@
 package io.writerme.resources.themes
 
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import io.writerme.resources.R
 
 val FONT_0_2 = 0.2.sp
 val FONT_1 = 1.sp
@@ -37,16 +40,12 @@ val FONT_50 = 50.sp
 val FONT_56 = 56.sp
 val FONT_60 = 60.sp
 
-/*
-TODO
-val fixelFontFamily = FontFamily(
-    Font(R.font.fixel_display_light, FontWeight.Light),
-    Font(R.font.fixel_display_regular, FontWeight.Normal),
-    Font(R.font.fixel_display_medium, FontWeight.Medium),
-    Font(R.font.fixel_display_bold, FontWeight.Bold),
-    Font(R.font.fixel_display_semi_bold, FontWeight.SemiBold),
-    Font(R.font.fixel_display_extra_bold, FontWeight.ExtraBold)
-)*/
+val ubuntuFontFamily = FontFamily(
+    Font(R.font.ubuntu_light, FontWeight.Light),
+    Font(R.font.ubuntu_regular, FontWeight.Normal),
+    Font(R.font.ubuntu_medium, FontWeight.Medium),
+    Font(R.font.ubuntu_bold, FontWeight.Bold)
+)
 
 data class AppTypography(
     val welcomeTitle: TextStyle,
@@ -58,20 +57,20 @@ val baseTypography = AppTypography(
     welcomeTitle = TextStyle(
         color = basePalette.primaryBlue,
         fontSize = FONT_48,
-        // fontFamily = fixelFontFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontFamily = ubuntuFontFamily,
+        fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center
     ),
     button = TextStyle(
-        // fontFamily = fixelFontFamily,
+        fontFamily = ubuntuFontFamily,
         fontSize = FONT_16,
         lineHeight = FONT_24,
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center
     ),
     editText = TextStyle(
-        // fontFamily = fixelFontFamily,
-        // color = basePalette.primaryText,
+        fontFamily = ubuntuFontFamily,
+        color = basePalette.primaryText,
         fontSize = FONT_16,
         lineHeight = FONT_22,
         fontWeight = FontWeight.Normal
