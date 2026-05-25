@@ -13,5 +13,8 @@
 /captures
 .externalNativeBuild
 .cxx
+.kotlin
+.idea
+.claude
 local.properties
 /app/release/
