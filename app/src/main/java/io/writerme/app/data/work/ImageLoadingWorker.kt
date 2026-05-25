@@ -6,69 +6,74 @@ import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import io.realm.kotlin.Realm
-import io.writerme.app.data.model.BookmarksFolder
-import io.writerme.app.data.model.Component
-import io.writerme.app.data.model.Note
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import io.writerme.app.data.dao.BookmarksFolderDao
+import io.writerme.app.data.dao.ComponentDao
+import io.writerme.app.data.dao.NoteDao
 import io.writerme.app.net.MetaTagScraper
 import io.writerme.app.utils.FilesUtil
-import io.writerme.app.utils.getDefaultInstance
 
 class ImageLoadingWorker(
     private val context: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
 
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface WorkerEntryPoint {
+        fun componentDao(): ComponentDao
+        fun noteDao(): NoteDao
+        fun bookmarksFolderDao(): BookmarksFolderDao
+    }
+
     private val componentId = inputData.getLong(IMAGE_COMPONENT_ID, -1)
 
     override suspend fun doWork(): Result {
-        val realm = Realm.getDefaultInstance()
+        if (componentId < 0) return Result.failure()
 
-        if (componentId >= 0) {
+        val entryPoint = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            WorkerEntryPoint::class.java
+        )
+        val componentDao = entryPoint.componentDao()
+        val noteDao = entryPoint.noteDao()
+        val bookmarksFolderDao = entryPoint.bookmarksFolderDao()
 
-            val component = realm.query(Component::class, "id == $0", componentId).first().find()
+        val component = componentDao.getById(componentId) ?: return Result.failure()
 
-            if (
-                component != null
-                && ContextCompat.checkSelfPermission(context, Manifest.permission.INTERNET)
-                    == PackageManager.PERMISSION_GRANTED
-            ) {
-                val metaTags = MetaTagScraper().scrape(component.url)
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.INTERNET)
+            != PackageManager.PERMISSION_GRANTED
+        ) return Result.failure()
 
-                val imageUrl = metaTags.ogImage ?: metaTags.twitterImage
-                val title = metaTags.ogTitle ?: metaTags.twitterTitle
+        val metaTags = MetaTagScraper().scrape(component.url)
+        val imageUrl = metaTags.ogImage ?: metaTags.twitterImage
+        val title = metaTags.ogTitle ?: metaTags.twitterTitle
 
-                imageUrl?.let { url ->
-                    val uri = FilesUtil(context).writeImageToFile(url)
+        imageUrl?.let { url ->
+            val uri = FilesUtil(context).writeImageToFile(url)
+            uri?.let { localUri ->
+                componentDao.update(
+                    component.copy(
+                        mediaUrl = localUri,
+                        title = title ?: component.title
+                    )
+                )
 
-                    uri?.let {
-                        realm.write {
-                            val found = findLatest(component)
-                            found?.mediaUrl = it
-                            title?.let { found?.title = it }
-
-                            if (component.noteId > 0) {
-                                val note = this.query(Note::class, "id == $0", component.noteId).first().find()
-                                note?.changeTime = System.currentTimeMillis()
-                            } else {
-                                val bookmarkId = inputData.getLong(BOOKMARK_FOLDER_ID, -1)
-                                if (bookmarkId >= 0) {
-                                    val folder = this.query(BookmarksFolder::class, "id == $0", bookmarkId).first().find()
-
-                                    folder?.changeTime = System.currentTimeMillis()
-                                }
-                            }
-                        }
+                if (component.noteId > 0) {
+                    noteDao.updateChangeTime(component.noteId, System.currentTimeMillis())
+                } else {
+                    val bookmarkId = inputData.getLong(BOOKMARK_FOLDER_ID, -1)
+                    if (bookmarkId >= 0) {
+                        bookmarksFolderDao.updateChangeTime(bookmarkId, System.currentTimeMillis())
                     }
                 }
-
-                realm.close()
-                return Result.success()
             }
         }
 
-        realm.close()
-        return Result.failure()
+        return Result.success()
     }
 
     companion object {

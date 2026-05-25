@@ -61,11 +61,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.realm.kotlin.ext.realmListOf
 import io.writerme.app.R
-import io.writerme.app.data.model.BookmarksFolder
-import io.writerme.app.data.model.Component
-import io.writerme.app.data.model.ComponentType
+import io.writerme.app.data.viewdata.BookmarksFolderViewData
+import io.writerme.app.data.viewdata.ComponentViewData
 import io.writerme.app.ui.component.CreateBookmarkDialog
 import io.writerme.app.ui.component.CreateFolderDialogBody
 import io.writerme.app.ui.component.Folder
@@ -86,18 +84,18 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun BookmarksScreen(
     bookmarksState: StateFlow<BookmarksState>,
-    onFolderClicked: (BookmarksFolder) -> Unit,
-    onLinkClicked: (Component) -> Unit,
+    onFolderClicked: (Long) -> Unit,
+    onLinkClicked: (ComponentViewData) -> Unit,
     showCreateFolderDialog: () -> Unit,
     dismissCreateFolderDialog: () -> Unit,
     showCreateBookmarkDialog: () -> Unit,
     dismissCreateBookmarkDialog: () -> Unit,
     toggleFloatingDialog: () -> Unit,
     navigateToParentFolder: () -> Unit,
-    createBookmark: (String, String, BookmarksFolder) -> Unit,
+    createBookmark: (String, String) -> Unit,
     createFolder: (String) -> Unit,
-    deleteFolder: (BookmarksFolder) -> Unit,
-    deleteBookmark: (Component) -> Unit,
+    deleteFolder: (Long) -> Unit,
+    deleteBookmark: (Long) -> Unit,
     toggleFolderDropdown: (Int) -> Unit,
     toggleBookmarkDropdown: (Int) -> Unit,
     dismissScreen: () -> Unit
@@ -267,9 +265,7 @@ fun BookmarksScreen(
 
                     FloatingActionButton(
                         modifier = Modifier.align(Alignment.CenterEnd),
-                        onClick = {
-                            toggleFloatingDialog()
-                        }
+                        onClick = { toggleFloatingDialog() }
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_add),
@@ -296,7 +292,6 @@ fun BookmarksScreen(
                                 columns = GridCells.Adaptive(120.dp),
                                 contentPadding = PaddingValues(padding),
                                 content = {
-
                                     itemsIndexed(items = state.value.currentFolder.folders) { index, item ->
                                         val isExpanded = state.value.folderDropdownIndex == index
 
@@ -308,15 +303,12 @@ fun BookmarksScreen(
                                                 folder = item,
                                                 modifier = Modifier
                                                     .combinedClickable(
-                                                        onLongClick = {
-                                                            toggleFolderDropdown(index)
-                                                        },
-                                                        onClick = { onFolderClicked(item) }
+                                                        onLongClick = { toggleFolderDropdown(index) },
+                                                        onClick = { onFolderClicked(item.id) }
                                                     )
                                                     .width(110.dp)
                                                     .padding(8.dp)
                                             )
-
 
                                             MaterialTheme(
                                                 colors = MaterialTheme.colors.copy(
@@ -332,9 +324,8 @@ fun BookmarksScreen(
                                                     onDismissRequest = { toggleFolderDropdown(index) },
                                                     scrollState = rememberScrollState()
                                                 ) {
-
                                                     DropdownMenuItem(onClick = {
-                                                        deleteFolder(item)
+                                                        deleteFolder(item.id)
                                                         toggleFolderDropdown(index)
                                                     }) {
                                                         Row(
@@ -402,9 +393,8 @@ fun BookmarksScreen(
                                                 onDismissRequest = { toggleBookmarkDropdown(index) },
                                                 scrollState = rememberScrollState()
                                             ) {
-
                                                 DropdownMenuItem(onClick = {
-                                                    deleteBookmark(item)
+                                                    deleteBookmark(item.id)
                                                     toggleBookmarkDropdown(index)
                                                 }) {
                                                     Row(
@@ -457,37 +447,7 @@ fun BookmarksScreen(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun BookmarksScreenPreview() {
-    val mainFolder = BookmarksFolder()
-    val job = BookmarksFolder().apply {
-        name = "Job"
-        parent = mainFolder
-    }
-    mainFolder.apply {
-        this.folders = realmListOf(
-            job,
-            BookmarksFolder().apply {
-                name = "Programming"
-                parent = mainFolder
-            },
-            BookmarksFolder().apply {
-                name = "Films"
-                parent = mainFolder
-            }
-        )
-
-        this.bookmarks = realmListOf(
-            Component().apply {
-                type = ComponentType.Link
-                title = "Top Travel Guide"
-            },
-            Component().apply {
-                type = ComponentType.Link
-                title = "Houses for Rent: Your best option"
-            }
-        )
-    }
-
-    val state = BookmarksState(mainFolder, false)
+    val state = BookmarksState(BookmarksFolderViewData.empty(), false)
 
     WriterMeTheme {
         BookmarksScreen(
@@ -500,7 +460,7 @@ fun BookmarksScreenPreview() {
             dismissCreateBookmarkDialog = {},
             toggleFloatingDialog = {},
             navigateToParentFolder = {},
-            createBookmark = { _, _, _ ->},
+            createBookmark = { _, _ -> },
             createFolder = {},
             deleteFolder = {},
             deleteBookmark = {},

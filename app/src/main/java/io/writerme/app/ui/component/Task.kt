@@ -29,8 +29,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.writerme.app.R
-import io.writerme.app.data.model.Component
 import io.writerme.app.data.model.ComponentType
+import io.writerme.app.data.viewdata.ComponentViewData
 import io.writerme.app.ui.theme.WriterMeTheme
 import io.writerme.app.ui.theme.backgroundGrey
 import io.writerme.app.ui.theme.light
@@ -40,9 +40,9 @@ import java.util.Date
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Task(
-    task: Component,
+    task: ComponentViewData,
     onClick: () -> Unit,
-    onValueChange: (Component) -> Unit,
+    onValueChange: (ComponentViewData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (task.type == ComponentType.Task) {
@@ -90,9 +90,7 @@ fun Task(
                             value = localText,
                             onValueChange = {
                                 localText = it
-                                task.content = it
-
-                                onValueChange(task)
+                                onValueChange(task.copy(content = it))
                             },
                             textStyle = MaterialTheme.typography.h3.copy(color = MaterialTheme.colors.light),
                             cursorBrush = SolidColor(MaterialTheme.colors.light),
@@ -112,11 +110,10 @@ fun Task(
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun TaskPreview() {
-    val component = Component().apply {
-        content = "Meeting with Anna"
+    val component = ComponentViewData.empty(ComponentType.Task).copy(
+        content = "Meeting with Anna",
         time = Date()
-        type = ComponentType.Task
-    }
+    )
 
     WriterMeTheme {
         Task(component, {}, {})

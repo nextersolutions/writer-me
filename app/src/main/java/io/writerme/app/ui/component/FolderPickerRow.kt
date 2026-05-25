@@ -13,11 +13,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.writerme.app.R
-import io.writerme.app.data.model.BookmarksFolder
+import io.writerme.app.data.viewdata.BookmarksFolderViewData
 import io.writerme.app.ui.theme.light
 
 @Composable
-fun FolderPickerRow(folder: BookmarksFolder, modifier: Modifier) {
+fun FolderPickerRow(folder: BookmarksFolderViewData, modifier: Modifier) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(0.dp, 8.dp)
@@ -36,5 +36,3 @@ fun FolderPickerRow(folder: BookmarksFolder, modifier: Modifier) {
         )
     }
 }
-
-

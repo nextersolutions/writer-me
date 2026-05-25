@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.writerme.app.R
 import io.writerme.app.data.audio.MediaListener
-import io.writerme.app.data.model.Component
 import io.writerme.app.data.model.ComponentType
+import io.writerme.app.data.viewdata.ComponentViewData
 import io.writerme.app.ui.state.AudioState
 import io.writerme.app.ui.theme.backgroundGrey
 import io.writerme.app.ui.theme.light
@@ -105,7 +105,7 @@ fun Audio(
                                 style = MaterialTheme.typography.caption,
                                 color = MaterialTheme.colors.light
                             )
-                            
+
                             Spacer(modifier = Modifier.weight(1f))
 
                             Text(
@@ -124,9 +124,7 @@ fun Audio(
 @Composable
 @Preview(showBackground = true)
 fun AudioPreview() {
-    val component = Component().apply {
-        type = ComponentType.Voice
-    }
+    val component = ComponentViewData.empty(ComponentType.Voice)
     val audioState = AudioState(
         audio = component,
         currentProgress = 30,

@@ -16,14 +16,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
-import io.writerme.app.data.repository.SettingsRepository
-import io.writerme.app.ui.navigation.*
+import io.writerme.app.usecase.settings.GetSettingsUseCase
+import io.writerme.app.ui.navigation.BookmarksScreen
+import io.writerme.app.ui.navigation.GreetingScreen
+import io.writerme.app.ui.navigation.HomeScreen
+import io.writerme.app.ui.navigation.NoteScreen
+import io.writerme.app.ui.navigation.RegistrationScreen
+import io.writerme.app.ui.navigation.SettingsScreen
 import io.writerme.app.ui.screen.BookmarksScreen
 import io.writerme.app.ui.screen.GreetingScreen
 import io.writerme.app.ui.screen.HomeScreen
@@ -41,10 +46,14 @@ import io.writerme.app.viewmodel.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val tag = "MainActivity"
+
+    @Inject
+    lateinit var getSettingsUseCase: GetSettingsUseCase
 
     private fun onLinkClicked(url: String) {
         try {
@@ -57,6 +66,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val startingRoute: String = runBlocking {
+            withContext(Dispatchers.IO) {
+                val settings = getSettingsUseCase()
+                if (settings?.fullName?.isNotEmpty() == true) HomeScreen.route
+                else GreetingScreen.route
+            }
+        }
 
         setContent {
             val navController = rememberNavController()
@@ -78,17 +95,6 @@ class MainActivity : AppCompatActivity() {
                             contentScale = ContentScale.Crop
                         )
 
-                        val startingRoute: String = runBlocking {
-                            withContext(Dispatchers.IO) {
-                                val settingsRepository = SettingsRepository()
-                                val route = if (settingsRepository.getSettings().fullName.isNotEmpty()) {
-                                    HomeScreen.route
-                                } else GreetingScreen.route
-                                settingsRepository.close()
-
-                                route
-                            }
-                        }
                         val context = LocalContext.current
 
                         val homeViewModel = hiltViewModel<HomeViewModel>()
@@ -117,9 +123,11 @@ class MainActivity : AppCompatActivity() {
                                     stateFlow = homeViewModel.homeStateFlow,
                                     toggleSearchMode = homeViewModel::toggleSearchMode,
                                     openTasksScreen = {
-                                        //navController.navigate(TasksScreen.route)
-
-                                        Toast.makeText(context, R.string.sorry_pending, Toast.LENGTH_LONG).show()
+                                        Toast.makeText(
+                                            context,
+                                            R.string.sorry_pending,
+                                            Toast.LENGTH_LONG
+                                        ).show()
                                     },
                                     openBookmarksScreen = {
                                         navController.navigate(BookmarksScreen.route)
@@ -156,6 +164,7 @@ class MainActivity : AppCompatActivity() {
                                     showHashtagBar = noteViewModel::showHashtagBar,
                                     addNewTag = noteViewModel::addNewTag,
                                     deleteTag = noteViewModel::deleteTag,
+                                    modifyHistory = noteViewModel::modifyHistory,
                                     saveChanges = noteViewModel::saveChanges,
                                     onComponentChange = noteViewModel::onComponentChange,
                                     addNewCheckBox = noteViewModel::addNewCheckBox,
@@ -217,4 +226,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-

@@ -60,10 +60,9 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.writerme.app.R
-import io.writerme.app.data.model.Component
 import io.writerme.app.data.model.ComponentType
-import io.writerme.app.data.model.History
-import io.writerme.app.data.model.Note
+import io.writerme.app.data.viewdata.ComponentViewData
+import io.writerme.app.data.viewdata.NoteViewData
 import io.writerme.app.ui.component.AddLinkDialogBody
 import io.writerme.app.ui.component.Checkbox
 import io.writerme.app.ui.component.Link
@@ -80,7 +79,6 @@ import io.writerme.app.utils.OnLifecycleEvent
 import io.writerme.app.utils.copyComponentContent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.util.Date
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -93,9 +91,9 @@ fun NoteScreen(
     showHashtagBar: (Boolean) -> Unit,
     addNewTag: (String) -> Unit,
     deleteTag: (String) -> Unit,
-    modifyHistory: (History, Component) -> Unit,
+    modifyHistory: (Long, ComponentViewData) -> Unit,
     saveChanges: () -> Unit,
-    onComponentChange: (Component) -> Unit,
+    onComponentChange: (ComponentViewData) -> Unit,
     addNewCheckBox: (Int) -> Unit,
     navigateBack: () -> Unit,
     addImageSection: (String) -> Unit,
@@ -103,8 +101,8 @@ fun NoteScreen(
     dismissDropDown: () -> Unit,
     toggleDropDownHistoryMode: () -> Unit,
     addLinkSection: (String) -> Unit,
-    toggleCheckbox: (Component) -> Unit,
-    deleteSection: (History) -> Unit,
+    toggleCheckbox: (ComponentViewData) -> Unit,
+    deleteSection: (Long) -> Unit,
     toggleAddLinkDialogVisibility: () -> Unit,
 ) {
     val scaffoldState = rememberScaffoldState()
@@ -180,9 +178,11 @@ fun NoteScreen(
                                 surface = MaterialTheme.colors.dropdownBackground,
                                 background = Color.Blue
                             ),
-                            shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(
-                                dimensionResource(id = R.dimen.small_radius)
-                            ))
+                            shapes = MaterialTheme.shapes.copy(
+                                medium = RoundedCornerShape(
+                                    dimensionResource(id = R.dimen.small_radius)
+                                )
+                            )
                         ) {
                             DropdownMenu(
                                 expanded = state.value.isTopBarDropdownVisible,
@@ -230,41 +230,10 @@ fun NoteScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        /*
-                        // pending features
-
-                        IconButton(onClick = {  }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_bold),
-                                contentDescription = stringResource(id = R.string.bold_icon)
-                            )
-                        }
-                        IconButton(onClick = {  }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_italic),
-                                contentDescription = stringResource(id = R.string.italic_icon)
-                            )
-                        }
-                        IconButton(onClick = {  }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_underline),
-                                contentDescription = stringResource(id = R.string.underline_icon)
-                            )
-                        }
-                        IconButton(onClick = {  }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_spacing),
-                                contentDescription = stringResource(id = R.string.spacing_icon)
-                            )
-                        }
-
-                        */
-
                         IconButton(onClick = {
                             if (!state.value.isTagsBarVisible) {
                                 showHashtagBar(true)
                             }
-                            //focusRequester.requestFocus()
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_hashtag),
@@ -283,7 +252,11 @@ fun NoteScreen(
 
                         IconButton(onClick = {
                             // pending: add voice
-                            Toast.makeText(context, context.resources.getString(R.string.pending), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                context.resources.getString(R.string.pending),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_microphone),
@@ -292,9 +265,7 @@ fun NoteScreen(
                             )
                         }
 
-                        IconButton(onClick = {
-                            addNewCheckBox(-1)
-                        }) {
+                        IconButton(onClick = { addNewCheckBox(-1) }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_checked),
                                 contentDescription = stringResource(id = R.string.add_tast_button),
@@ -303,9 +274,7 @@ fun NoteScreen(
                             )
                         }
 
-                        IconButton(onClick = {
-                            addImageComponentPicker.launch("image/*")
-                        }) {
+                        IconButton(onClick = { addImageComponentPicker.launch("image/*") }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_camera),
                                 contentDescription = stringResource(id = R.string.add_media_button),
@@ -326,13 +295,14 @@ fun NoteScreen(
                         start = padding, top = padding, end = padding,
                         bottom = paddingValues.calculateBottomPadding() + padding
                     )
-                    .systemBarsPadding().imePadding()
+                    .systemBarsPadding()
+                    .imePadding()
             ) {
                 item {
                     val title = note.title?.newest()
 
-                    if (note.cover != null && note.cover!!.isNotEmpty()) {
-                        val image = note.cover!!.newest()
+                    if (note.cover?.isNotEmpty() == true) {
+                        val image = note.cover?.newest()
 
                         Column(
                             modifier = Modifier.padding(bottom = padding)
@@ -343,14 +313,12 @@ fun NoteScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(bottom = padding)
-                                        .clickable {
-                                            addCoverImagePicker.launch("image/*")
-                                        }
+                                        .clickable { addCoverImagePicker.launch("image/*") }
                                 )
                             }
 
                             NoteText(
-                                component = title ?: Component.emptyText(),
+                                component = title ?: ComponentViewData.empty(),
                                 onValueChange = onComponentChange,
                                 typography = MaterialTheme.typography.h1,
                                 placeholderResource = R.string.type_title,
@@ -362,7 +330,7 @@ fun NoteScreen(
                     } else {
                         val shape = RoundedCornerShape(dimensionResource(id = R.dimen.big_radius))
 
-                        Row (
+                        Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(bottom = padding)
                         ) {
@@ -372,9 +340,7 @@ fun NoteScreen(
                                     .background(MaterialTheme.colors.backgroundGrey)
                                     .padding(4.dp, 12.dp)
                                     .shadow(dimensionResource(id = R.dimen.shadow), shape),
-                                onClick = {
-                                    addCoverImagePicker.launch("image/*")
-                                }
+                                onClick = { addCoverImagePicker.launch("image/*") }
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_camera),
@@ -385,7 +351,7 @@ fun NoteScreen(
                             }
 
                             NoteText(
-                                component = title ?: Component.emptyText(),
+                                component = title ?: ComponentViewData.empty(),
                                 onValueChange = onComponentChange,
                                 typography = MaterialTheme.typography.h1,
                                 placeholderResource = R.string.type_title,
@@ -414,7 +380,7 @@ fun NoteScreen(
 
                 itemsIndexed(
                     items = note.content,
-                    itemContent = {currentIndex, item ->
+                    itemContent = { currentIndex, item ->
                         val newest = item.newest()
 
                         newest?.let { component ->
@@ -438,9 +404,7 @@ fun NoteScreen(
                                             modifier = Modifier
                                                 .padding(0.dp, 0.dp, 0.dp, 8.dp)
                                                 .size(20.dp)
-                                                .clickable {
-                                                    showDropdown(currentIndex)
-                                                }
+                                                .clickable { showDropdown(currentIndex) }
                                         )
                                     }
 
@@ -451,22 +415,18 @@ fun NoteScreen(
                                                 onValueChange = onComponentChange
                                             )
                                         }
+
                                         ComponentType.Checkbox -> {
                                             Checkbox(
                                                 component = component,
-                                                modifier = Modifier.animateItemPlacement().padding(start = padding),
+                                                modifier = Modifier.padding(start = padding),
                                                 onValueChange = onComponentChange,
-                                                onCheckedChange = {
-                                                    toggleCheckbox(component)
-                                                },
-                                                onAddNewCheckbox = {
-                                                    addNewCheckBox(currentIndex)
-                                                },
-                                                onDeleteCheckBox = {
-                                                    deleteSection(item)
-                                                },
+                                                onCheckedChange = { toggleCheckbox(component) },
+                                                onAddNewCheckbox = { addNewCheckBox(currentIndex) },
+                                                onDeleteCheckBox = { deleteSection(item.id) },
                                             )
                                         }
+
                                         ComponentType.Voice -> {}
                                         ComponentType.Task -> {
                                             Task(
@@ -475,17 +435,19 @@ fun NoteScreen(
                                                 onValueChange = onComponentChange
                                             )
                                         }
+
                                         ComponentType.Link -> {
                                             Link(
                                                 link = component,
                                                 onClick = {},
                                                 onLongClick = {}
                                             )
-                                            // TODO: link is not editable, though it should be
                                         }
+
                                         ComponentType.Video -> {
                                             // pending feature
                                         }
+
                                         ComponentType.Image -> {
                                             io.writerme.app.ui.component.Image(
                                                 component = component
@@ -499,9 +461,11 @@ fun NoteScreen(
                                         surface = MaterialTheme.colors.light,
                                         background = Color.Blue
                                     ),
-                                    shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(
-                                        dimensionResource(id = R.dimen.small_radius)
-                                    ))
+                                    shapes = MaterialTheme.shapes.copy(
+                                        medium = RoundedCornerShape(
+                                            dimensionResource(id = R.dimen.small_radius)
+                                        )
+                                    )
                                 ) {
                                     ExposedDropdownMenu(
                                         expanded = isExpanded,
@@ -509,24 +473,24 @@ fun NoteScreen(
                                         scrollState = rememberScrollState()
                                     ) {
                                         if (state.value.isDropDownInHistoryMode) {
-                                            item.changes.forEach { component ->
+                                            item.changes.forEach { historyComponent ->
                                                 DropdownMenuItem(onClick = {
-                                                    modifyHistory(item, component)
+                                                    modifyHistory(item.id, historyComponent)
                                                     dismissDropDown()
                                                 }) {
-                                                    when (component.type) {
+                                                    when (historyComponent.type) {
                                                         ComponentType.Text,
                                                         ComponentType.Checkbox,
                                                         ComponentType.Task -> {
                                                             Text(
-                                                                text = component.content,
+                                                                text = historyComponent.content,
                                                                 style = MaterialTheme.typography.body1
                                                             )
                                                         }
 
                                                         ComponentType.Link -> {
                                                             Text(
-                                                                text = component.url,
+                                                                text = historyComponent.url,
                                                                 style = MaterialTheme.typography.body1,
                                                                 modifier = Modifier.fillMaxWidth(),
                                                                 maxLines = 1,
@@ -536,13 +500,14 @@ fun NoteScreen(
 
                                                         ComponentType.Image -> {
                                                             io.writerme.app.ui.component.Image(
-                                                                component = component
+                                                                component = historyComponent
                                                             )
                                                         }
 
                                                         ComponentType.Voice -> {
                                                             // pending
                                                         }
+
                                                         ComponentType.Video -> {
                                                             // pending feature
                                                         }
@@ -566,7 +531,7 @@ fun NoteScreen(
                                                     ) {
                                                         Text(
                                                             text = stringResource(id = R.string.copy),
-                                                            style  = MaterialTheme.typography.body1
+                                                            style = MaterialTheme.typography.body1
                                                         )
 
                                                         Icon(
@@ -586,7 +551,7 @@ fun NoteScreen(
                                                     ) {
                                                         Text(
                                                             text = stringResource(id = R.string.history),
-                                                            style  = MaterialTheme.typography.body1
+                                                            style = MaterialTheme.typography.body1
                                                         )
 
                                                         Icon(
@@ -628,79 +593,12 @@ fun NoteScreen(
 @Preview
 @Composable
 fun NoteScreenPreview() {
-    val note = Note()
-
-    val text = Component().apply {
-        type = ComponentType.Text
-        content = "Lorem Ipsum is simply dummy text of the printing and typesetting industry..."
-    }
-
-    val checkbox = Component().apply {
-        type = ComponentType.Checkbox
-        content = "Complete writing post for Instagram"
-        isChecked = true
-    }
-
-    val checkbox1 = Component().apply {
-        type = ComponentType.Checkbox
-        content = "Complete writing post for Instagram"
-        isChecked = true
-    }
-
-    val checkbox2 = Component().apply {
-        type = ComponentType.Checkbox
-        content = "Complete writing post for Instagram"
-        isChecked = true
-    }
-
-    val task = Component().apply {
-        content = "Meeting with Anna"
-        time = Date()
-        type = ComponentType.Task
-    }
-
-    val image = Component().apply {
-        type = ComponentType.Image
-        mediaUrl = ""
-    }
-
-    val link = Component().apply {
-        type = ComponentType.Link
-        title = "Best resort in Italy you ever dreamed about"
-        url = ""
-    }
-
-    note.apply {
-        title = History()
-        title!!.push(
-            component = Component().apply {
-                title = "Instagram Content Plan for Beginner"
-                type = ComponentType.Text
-            }
-        )
-
-        /*cover.push(
-            component = Component().apply {
-                imageUrl = "some url..."
-                type = ComponentType.Image
-            }
-        )*/
-
-        content.addAll(
-            listOf(
-                History(text),
-                History(checkbox), History(checkbox1), History(checkbox2)
-            )
-        )
-
-        tags.addAll(listOf("stories", "work"))
-    }
-
-    val noteState = NoteState(note = note)
+    val noteState = NoteState(note = NoteViewData.empty())
     val state = MutableStateFlow(noteState)
 
     WriterMeTheme {
-        NoteScreen(noteState = state, {}, {}, {}, {}, {}, {},
-            { _, _ ->}, {}, {}, { _ ->}, {}, { _ ->}, {}, {}, {}, {}, {}, {}, {})
+        NoteScreen(
+            noteState = state, {}, {}, {}, {}, {}, {},
+            { _, _ -> }, {}, {}, { _ -> }, {}, { _ -> }, {}, {}, {}, {}, {}, {}, {})
     }
 }

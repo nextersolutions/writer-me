@@ -1,6 +1,6 @@
 package io.writerme.app.ui.state
 
-import io.writerme.app.data.model.Note
+import io.writerme.app.data.viewdata.NoteViewData
 import io.writerme.app.ui.component.HomeFilterTab
 
 data class HomeState(
@@ -10,5 +10,5 @@ data class HomeState(
     val isSearchMode: Boolean = false,
     val isImportantVisible: Boolean = false,
     val expandedDropdownId: Int = -1,
-    var notes: List<Note> = listOf()
+    var notes: List<NoteViewData> = listOf()
 )

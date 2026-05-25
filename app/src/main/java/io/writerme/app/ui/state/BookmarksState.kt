@@ -1,9 +1,9 @@
 package io.writerme.app.ui.state
 
-import io.writerme.app.data.model.BookmarksFolder
+import io.writerme.app.data.viewdata.BookmarksFolderViewData
 
 data class BookmarksState(
-    val currentFolder: BookmarksFolder,
+    val currentFolder: BookmarksFolderViewData,
     val isBookmarkDialogDisplayed: Boolean = false,
     val isFolderDialogDisplayed: Boolean = false,
     val isFloatingDialogShown: Boolean = false,
@@ -11,8 +11,6 @@ data class BookmarksState(
     val bookmarkDropdownIndex: Int = -3
 ) {
     companion object {
-        fun empty() : BookmarksState {
-            return BookmarksState(BookmarksFolder())
-        }
+        fun empty(): BookmarksState = BookmarksState(BookmarksFolderViewData.empty())
     }
 }
