@@ -12,6 +12,7 @@ import io.writerme.core.contracts.validators.IPhoneValidator
 import io.writerme.core.helpers.LocalImagesLoader
 import io.writerme.domain.validators.FieldValidatorImpl
 import io.writerme.domain.validators.PhoneValidatorImpl
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -34,4 +35,9 @@ data object DomainModule {
     ): LocalImagesLoader {
         return LocalImagesLoader(context)
     }
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext appContext: Context): WorkManager =
+        WorkManager.getInstance(appContext)
 }
