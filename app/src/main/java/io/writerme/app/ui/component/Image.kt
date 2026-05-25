@@ -12,17 +12,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import io.writerme.app.R
-import io.writerme.app.data.model.Component
 import io.writerme.app.data.model.ComponentType
+import io.writerme.app.data.viewdata.ComponentViewData
 import io.writerme.app.ui.theme.WriterMeTheme
 
 @Composable
-fun Image(component: Component, modifier: Modifier = Modifier) {
+fun Image(component: ComponentViewData, modifier: Modifier = Modifier) {
     if (component.type == ComponentType.Image) {
         val shape = RoundedCornerShape(dimensionResource(id = R.dimen.big_radius))
-
         Card(
             shape = shape,
             modifier = modifier
@@ -43,13 +42,10 @@ fun Image(component: Component, modifier: Modifier = Modifier) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ImagePreview() {
-    val imageComponent = Component().apply {
-        type = ComponentType.Image
-    }
-
-    val modifier = Modifier.padding(dimensionResource(id = R.dimen.screen_padding))
-
     WriterMeTheme {
-        Image(component = imageComponent, modifier = modifier)
+        Image(
+            component = ComponentViewData.empty(ComponentType.Image),
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.screen_padding))
+        )
     }
 }

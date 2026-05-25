@@ -5,27 +5,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.realm.kotlin.notifications.ObjectChange
-import io.writerme.app.data.model.Component
 import io.writerme.app.data.model.ComponentType
-import io.writerme.app.data.model.History
-import io.writerme.app.data.model.Note
 import io.writerme.app.data.repository.NoteRepository
+import io.writerme.app.data.viewdata.ComponentViewData
 import io.writerme.app.ui.navigation.NoteScreen
 import io.writerme.app.ui.state.NoteState
 import io.writerme.app.utils.FilesUtil
 import io.writerme.app.utils.scheduleImageLoading
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,61 +28,54 @@ import javax.inject.Inject
 class NoteViewModel @Inject constructor(
     private val savedState: SavedStateHandle,
     private val workManager: WorkManager,
-    private val filesUtil: FilesUtil
-): ViewModel() {
-    private val noteRepository: NoteRepository = NoteRepository()
-    private val changes : HashMap<Long, Int> = hashMapOf()
+    private val filesUtil: FilesUtil,
+    private val noteRepository: NoteRepository
+) : ViewModel() {
 
-    private val pendingUpdates = mutableMapOf<Long, Component>()
-    private val saveFlow = MutableSharedFlow<Component>()
-
-    private lateinit var _noteSource: Flow<ObjectChange<Note>>
+    private val changes: HashMap<Long, Int> = hashMapOf()
+    private val pendingUpdates = mutableMapOf<Long, ComponentViewData>()
+    private val saveFlow = MutableSharedFlow<ComponentViewData>()
 
     private val _noteState: MutableStateFlow<NoteState> = MutableStateFlow(NoteState.empty())
     val noteState: StateFlow<NoteState> = _noteState
 
     init {
-        addCloseable(noteRepository)
-
         viewModelScope.launch {
             val id: String? = savedState[NoteScreen.NOTE_PARAM]
+            val noteId = id?.toLongOrNull() ?: noteRepository.createNewNote()
 
-            val noteId = id?.toLongOrNull()
-
-            _noteSource = if (noteId != null) {
-                noteRepository.getNote(noteId)
-            } else noteRepository.createNewNote()
-
-            _noteSource.mapLatest {
-                it.obj?.let { updatedNote ->
+            noteRepository.getNote(noteId)
+                .onEach { updatedNote ->
                     _noteState.emit(_noteState.value.copy(note = updatedNote))
                 }
-            }.stateIn(viewModelScope)
+                .launchIn(viewModelScope)
         }
 
         saveFlow.debounce(300)
             .onEach { component ->
                 pendingUpdates.remove(component.id)
-                noteRepository.saveComponent(component.copy(
-                    content = component.content.trimEnd { it.isWhitespace() || it == '\n' }
-                ))
-            }.launchIn(viewModelScope)
+                noteRepository.saveComponent(
+                    component.copy(
+                        content = component.content.trimEnd { it.isWhitespace() || it == '\n' }
+                    )
+                )
+            }
+            .launchIn(viewModelScope)
     }
 
-    fun modifyHistory(history: History, component: Component) {
+    fun modifyHistory(historyId: Long, component: ComponentViewData) {
         val change = changes.getOrDefault(component.id, 0)
-
         viewModelScope.launch {
             if (change > 0) {
                 noteRepository.saveComponent(component)
             } else {
-                noteRepository.updateHistory(history.id, component.copy())
+                noteRepository.updateHistory(historyId, component.copy())
                 changes[component.id] = 1
             }
         }
     }
 
-    fun onComponentChange(component: Component) {
+    fun onComponentChange(component: ComponentViewData) {
         if (component.noteId > 0) {
             viewModelScope.launch {
                 pendingUpdates[component.id] = component
@@ -115,14 +102,9 @@ class NoteViewModel @Inject constructor(
     fun addImageSection(url: String) {
         viewModelScope.launch {
             val uri = filesUtil.writeImageToFile(url)
-
-            val component = Component().apply {
-                this.noteId = _noteState.value.note.id
-                this.mediaUrl = uri
-                this.type = ComponentType.Image
-            }
-
-            noteRepository.addSection(_noteState.value.note.id, component)
+            val noteId = _noteState.value.note.id
+            val component = ComponentViewData.empty(ComponentType.Image, noteId).copy(mediaUrl = uri)
+            noteRepository.addSection(noteId, component)
         }
     }
 
@@ -143,16 +125,14 @@ class NoteViewModel @Inject constructor(
     fun updateCoverImage(url: String) {
         viewModelScope.launch {
             val noteId = _noteState.value.note.id
-
             val uri = filesUtil.writeImageToFile(url)
             noteRepository.updateNoteCoverImage(noteId, uri)
         }
     }
 
-    fun showHashtagBar(show : Boolean) {
+    fun showHashtagBar(show: Boolean) {
         viewModelScope.launch {
-            val state = _noteState.value
-            _noteState.emit(state.copy(isTagsBarVisible = show))
+            _noteState.emit(_noteState.value.copy(isTagsBarVisible = show))
         }
     }
 
@@ -169,62 +149,50 @@ class NoteViewModel @Inject constructor(
     }
 
     fun showDropdown(index: Int) {
-        val state = _noteState.value
         viewModelScope.launch {
-            _noteState.emit(state.copy(expandedDropdownId = index))
+            _noteState.emit(_noteState.value.copy(expandedDropdownId = index))
         }
     }
 
     fun dismissDropDown() {
         viewModelScope.launch {
-            val state = _noteState.value
-
-            _noteState.emit(state.copy(expandedDropdownId = -1))
+            _noteState.emit(_noteState.value.copy(expandedDropdownId = -1))
         }
     }
 
-    fun toggleDropDownHistoryMode()  {
+    fun toggleDropDownHistoryMode() {
         viewModelScope.launch {
             val state = _noteState.value
-
             _noteState.emit(state.copy(isDropDownInHistoryMode = !state.isDropDownInHistoryMode))
         }
     }
 
-    fun addLinkSection(url : String) {
+    fun addLinkSection(url: String) {
         viewModelScope.launch {
             val noteId = _noteState.value.note.id
-
-            val component = Component().apply {
-                this.noteId = noteId
-                this.type = ComponentType.Link
-                this.url = url
-            }
-
-            val link = noteRepository.saveComponent(component)
-            workManager.scheduleImageLoading(link.id)
-
-            noteRepository.addSection(noteId, link)
+            val component = ComponentViewData.empty(ComponentType.Link, noteId).copy(url = url)
+            val saved = noteRepository.saveComponent(component)
+            workManager.scheduleImageLoading(saved.id)
+            noteRepository.addSection(noteId, saved)
         }
     }
 
     fun toggleAddLinkDialogVisibility() {
         viewModelScope.launch {
             val state = _noteState.value
-
             _noteState.emit(state.copy(isAddLinkDialogDisplayed = !state.isAddLinkDialogDisplayed))
         }
     }
 
-    fun toggleCheckbox(checkbox: Component) {
+    fun toggleCheckbox(checkbox: ComponentViewData) {
         viewModelScope.launch {
             noteRepository.toggleCheckbox(checkbox)
         }
     }
 
-    fun deleteSection(history: History) {
+    fun deleteSection(histId: Long) {
         viewModelScope.launch {
-            noteRepository.deleteSection(history)
+            noteRepository.deleteSection(histId)
         }
     }
 

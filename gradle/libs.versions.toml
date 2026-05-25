@@ -15,8 +15,9 @@ hilt = "2.58"
 androidxHilt = "1.3.0"
 
 coil = "3.3.0"
-realm = "2.1.0"
+roomVersion = "2.7.2"
 coroutines = "1.9.0"
+hiltWork = "1.3.0"
 
 chiptextfield = "0.4.9"
 audiowaveform = "1.1.1"
@@ -69,8 +70,13 @@ androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref =
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 
-# Realm
-realm-base = { module = "io.realm.kotlin:library-base", version.ref = "realm" }
+# Room
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
+room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
+
+# Hilt Work
+androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltWork" }
 
 # Coroutines
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -106,5 +112,4 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin" }
-realm = { id = "io.realm.kotlin", version.ref = "realm" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

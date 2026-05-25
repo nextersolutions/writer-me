@@ -1,275 +1,293 @@
 package io.writerme.app.data.repository
 
-import io.realm.kotlin.MutableRealm
-import io.realm.kotlin.Realm
-import io.realm.kotlin.UpdatePolicy
-import io.realm.kotlin.ext.asFlow
-import io.realm.kotlin.ext.isManaged
-import io.realm.kotlin.ext.query
-import io.realm.kotlin.notifications.ObjectChange
-import io.realm.kotlin.notifications.ResultsChange
-import io.realm.kotlin.query.Sort
-import io.writerme.app.data.model.Component
+import io.writerme.app.data.dao.ComponentDao
+import io.writerme.app.data.dao.HistoryDao
+import io.writerme.app.data.dao.NoteDao
+import io.writerme.app.data.mapper.ComponentMapper
+import io.writerme.app.data.mapper.HistoryMapper
+import io.writerme.app.data.mapper.NoteMapper
+import io.writerme.app.data.model.ComponentEntity
 import io.writerme.app.data.model.ComponentType
-import io.writerme.app.data.model.History
-import io.writerme.app.data.model.Note
-import io.writerme.app.utils.deleteHistory
-import io.writerme.app.utils.deleteNote
-import io.writerme.app.utils.getDefaultInstance
-import io.writerme.app.utils.getLast
+import io.writerme.app.data.model.HistoryComponentCrossRef
+import io.writerme.app.data.model.HistoryEntity
+import io.writerme.app.data.model.NoteContentCrossRef
+import io.writerme.app.data.model.NoteEntity
+import io.writerme.app.data.viewdata.ComponentViewData
+import io.writerme.app.data.viewdata.NoteViewData
 import kotlinx.coroutines.flow.Flow
-import java.io.Closeable
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
+import java.io.File
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class NoteRepository: Repository(), Closeable {
-    private val realm: Realm = Realm.getDefaultInstance()
+@Singleton
+class NoteRepository @Inject constructor(
+    private val noteDao: NoteDao,
+    private val historyDao: HistoryDao,
+    private val componentDao: ComponentDao,
+    private val noteMapper: NoteMapper,
+    private val historyMapper: HistoryMapper,
+    private val componentMapper: ComponentMapper
+) : Repository() {
 
-    suspend fun createNewNote() : Flow<ObjectChange<Note>> {
-        return realm.write {
-            val note = copyToRealm(Note(), UpdatePolicy.ALL)
+    fun getNotes(): Flow<List<NoteViewData>> = noteDao.getAllNotes()
+        .map { entities -> entities.map { buildNoteViewData(it) } }
 
-            val titleHistory = copyToRealm(History().apply { this.id = nextId()})
-            val titleComponent = Component(note, "").apply { this.id = nextId() }
-            titleHistory.push(copyToRealm(titleComponent))
+    fun getNote(noteId: Long): Flow<NoteViewData> = noteDao.getNoteByIdFlow(noteId)
+        .filterNotNull()
+        .map { buildNoteViewData(it) }
 
-            val coverHistory = copyToRealm(History().apply { this.id = nextId() })
+    suspend fun createNewNote(): Long {
+        val noteId = nextId()
 
-            val textHistory = copyToRealm(History().apply { this.id = nextId() })
-            val textComponent = Component(note, "").apply { this.id = nextId() }
-            textHistory.push(copyToRealm(textComponent))
+        val titleHistoryId = nextId()
+        historyDao.insert(HistoryEntity(id = titleHistoryId))
+        val titleComponent = ComponentEntity(id = nextId(), noteId = noteId, type = ComponentType.Text.value)
+        componentDao.insert(titleComponent)
+        historyDao.insertCrossRef(HistoryComponentCrossRef(historyId = titleHistoryId, componentId = titleComponent.id, position = 0))
 
-            note.title = titleHistory
-            note.cover = coverHistory
-            note.content.add(textHistory)
+        val coverHistoryId = nextId()
+        historyDao.insert(HistoryEntity(id = coverHistoryId))
 
-            note
-        }.asFlow()
+        noteDao.insert(
+            NoteEntity(
+                id = noteId,
+                titleHistoryId = titleHistoryId,
+                coverHistoryId = coverHistoryId,
+                isImportant = false,
+                created = System.currentTimeMillis(),
+                changeTime = System.currentTimeMillis()
+            )
+        )
+
+        val textHistoryId = nextId()
+        historyDao.insert(HistoryEntity(id = textHistoryId))
+        val textComponent = ComponentEntity(id = nextId(), noteId = noteId, type = ComponentType.Text.value)
+        componentDao.insert(textComponent)
+        historyDao.insertCrossRef(HistoryComponentCrossRef(historyId = textHistoryId, componentId = textComponent.id, position = 0))
+        noteDao.insertContentCrossRef(NoteContentCrossRef(noteId = noteId, historyId = textHistoryId, position = 0))
+
+        return noteId
     }
 
-    fun getNotes(): Flow<ResultsChange<Note>> {
-        return realm.query<Note>().sort("changeTime", Sort.DESCENDING).find().asFlow()
+    suspend fun saveComponent(component: ComponentViewData): ComponentViewData {
+        componentDao.insert(componentMapper.mapToEntity(component))
+        return component
     }
 
-    suspend fun getNote(noteId: Long) : Flow<ObjectChange<Note>> {
-        return realm.query(Note::class, "id == $0", noteId).first().find()?.asFlow() ?: createNewNote()
-    }
+    suspend fun updateHistory(historyId: Long, component: ComponentViewData, maxHistory: Int = 20) {
+        val entity = componentMapper.mapToEntity(component)
+        componentDao.insert(entity)
 
-    suspend fun saveComponent(component: Component): Component {
-        return realm.write {
-            this.copyToRealm(component, UpdatePolicy.ALL)
-        }
-    }
-
-    suspend fun updateHistory(historyId: Long, component: Component) {
-        realm.write {
-            val history = this.query(History::class, "id == $0", historyId).first().find()
-
-            history?.let {
-                val saved = this.copyToRealm(component, UpdatePolicy.ALL)
-
-                val toDelete = it.push(saved)
-                toDelete?.let { obj -> delete(obj) }
-
-                copyToRealm(it)
-
-                val note = this.query(Note::class, "id == $0", saved.noteId).first().find()
-                note?.changeTime = System.currentTimeMillis()
-
-                saved
+        val count = historyDao.getComponentCount(historyId)
+        if (count >= maxHistory) {
+            val components = historyDao.getComponentsSorted(historyId)
+            components.firstOrNull()?.let { oldest ->
+                historyDao.deleteCrossRef(historyId, oldest.id)
+                componentDao.deleteById(oldest.id)
             }
+        }
+
+        val nextPosition = (historyDao.getMaxPosition(historyId) ?: -1) + 1
+        historyDao.insertCrossRef(HistoryComponentCrossRef(historyId = historyId, componentId = entity.id, position = nextPosition))
+
+        noteDao.getNoteIdForHistory(historyId)?.let {
+            noteDao.updateChangeTime(it, System.currentTimeMillis())
         }
     }
 
     suspend fun updateNoteCoverImage(noteId: Long, uri: String?) {
-        realm.write {
-            val note = this.query(Note::class, "id == $0", noteId).first().find()
+        val note = noteDao.getNoteById(noteId) ?: return
 
-            val component = Component().apply {
-                this.noteId = noteId
-                this.mediaUrl = uri
-                this.type = ComponentType.Image
-            }
-            val image = copyToRealm(component, UpdatePolicy.ALL)
-
-            note?.let {
-                if (it.cover == null) {
-                    it.cover = copyToRealm(
-                        History().apply { this.id = nextId() },
-                        UpdatePolicy.ALL
-                    )
-                }
-
-                it.cover!!.push(image)
-                it.changeTime = System.currentTimeMillis()
-            }
+        val coverHistoryId = note.coverHistoryId ?: run {
+            val newId = nextId()
+            historyDao.insert(HistoryEntity(id = newId))
+            noteDao.update(note.copy(coverHistoryId = newId, changeTime = System.currentTimeMillis()))
+            newId
         }
+
+        val imageComponent = ComponentEntity(
+            id = nextId(),
+            noteId = noteId,
+            mediaUrl = uri,
+            type = ComponentType.Image.value
+        )
+        componentDao.insert(imageComponent)
+        val nextPosition = (historyDao.getMaxPosition(coverHistoryId) ?: -1) + 1
+        historyDao.insertCrossRef(HistoryComponentCrossRef(historyId = coverHistoryId, componentId = imageComponent.id, position = nextPosition))
+
+        noteDao.updateChangeTime(noteId, System.currentTimeMillis())
     }
 
     suspend fun addNewTag(noteId: Long, tag: String) {
-        realm.write {
-            val note = this.query(Note::class, "id == $0", noteId).first().find()
-
-            note?.let {
-                if (!note.tags.contains(tag)) {
-                    note.tags.add(tag)
-                }
-                it.changeTime = System.currentTimeMillis()
-            }
+        val existing = noteDao.getTags(noteId)
+        if (!existing.contains(tag)) {
+            noteDao.insertTag(io.writerme.app.data.model.NoteTagEntity(noteId = noteId, tag = tag))
         }
+        noteDao.updateChangeTime(noteId, System.currentTimeMillis())
     }
 
     suspend fun deleteTag(noteId: Long, tag: String) {
-        realm.write {
-            val note = this.query(Note::class, "id = $0", noteId).first().find()
-            note?.tags?.remove(tag)
-            note?.changeTime = System.currentTimeMillis()
-        }
-    }
-
-    private suspend fun addTextIfNecessary(noteId: Long) {
-        realm.write {
-            val note = this.query(Note::class, "id == $0", noteId).first().find()
-
-            note?.let {
-                if (it.content.isNotEmpty()) {
-                    val lastHistory = it.content.getLast()!!
-
-                    val type = lastHistory.getType()
-
-                    if (type == null || type != ComponentType.Text) {
-                        val textComponent = Component().apply {
-                            this.type = ComponentType.Text
-                            this.noteId = noteId
-                        }
-                        val text = copyToRealm(textComponent, UpdatePolicy.ALL)
-
-                        if (type == null) {
-                            lastHistory.push(text)
-                        } else {
-                            var history = History()
-                            history = copyToRealm(history, UpdatePolicy.ALL)
-                            history.push(textComponent)
-
-                            note.content.add(history)
-                        }
-                    }
-                }
-                it.changeTime = System.currentTimeMillis()
-            }
-        }
+        noteDao.deleteTag(noteId, tag)
+        noteDao.updateChangeTime(noteId, System.currentTimeMillis())
     }
 
     suspend fun addNewCheckBox(noteId: Long, currentPosition: Int = -1) {
-        if (noteId >= 0) {
+        if (noteId < 0) return
 
-            realm.write {
-                val component = Component().apply {
-                    this.noteId = noteId
-                    this.type = ComponentType.Checkbox
-                }
+        deleteTextIfNecessary(noteId)
 
-                val checkBox = copyToRealm(component, UpdatePolicy.ALL)
+        val checkboxComponent = ComponentEntity(id = nextId(), noteId = noteId, type = ComponentType.Checkbox.value)
+        componentDao.insert(checkboxComponent)
 
-                val note = this.query(Note::class, "id == $0", noteId).first().find()
+        val historyId = nextId()
+        historyDao.insert(HistoryEntity(id = historyId))
+        historyDao.insertCrossRef(HistoryComponentCrossRef(historyId = historyId, componentId = checkboxComponent.id, position = 0))
 
-                deleteTextIfNecessary(this, note)
-
-                val history = this.copyToRealm(History(), UpdatePolicy.ALL)
-                history.changes.add(checkBox)
-
-                note?.let {
-                    if (currentPosition < 0 || (currentPosition + 1 == it.content.size)) {
-                        it.content.add(history)
-                    } else {
-                        it.content.add(currentPosition + 1, history)
-                    }
-                }
-                note?.changeTime = System.currentTimeMillis()
-            }
-
-            addTextIfNecessary(noteId)
+        val contentIds = noteDao.getContentHistoryIds(noteId)
+        val insertAt = if (currentPosition < 0 || currentPosition + 1 >= contentIds.size) {
+            (noteDao.getMaxContentPosition(noteId) ?: -1) + 1
+        } else {
+            currentPosition + 1
         }
+        noteDao.insertContentCrossRef(NoteContentCrossRef(noteId = noteId, historyId = historyId, position = insertAt))
+
+        noteDao.updateChangeTime(noteId, System.currentTimeMillis())
+
+        addTextIfNecessary(noteId)
     }
 
-    suspend fun addSection(noteId: Long, comp: Component) {
-        if (noteId >= 0) {
-            realm.write {
-                val note = this.query(Note::class, "id == $0", noteId).first().find()
+    suspend fun addSection(noteId: Long, comp: ComponentViewData) {
+        if (noteId < 0) return
 
-                deleteTextIfNecessary(this, note)
+        deleteTextIfNecessary(noteId)
 
-                val component = if (comp.isManaged()) findLatest(comp)!! else copyToRealm(comp, UpdatePolicy.ALL)
-                val history = copyToRealm(History(), UpdatePolicy.ALL)
-                history.push(component)
+        val entity = componentMapper.mapToEntity(comp)
+        componentDao.insert(entity)
 
-                note?.content?.add(history)
-                note?.changeTime = System.currentTimeMillis()
-            }
+        val historyId = nextId()
+        historyDao.insert(HistoryEntity(id = historyId))
+        historyDao.insertCrossRef(HistoryComponentCrossRef(historyId = historyId, componentId = entity.id, position = 0))
 
-            addTextIfNecessary(noteId)
-        }
+        val maxPos = (noteDao.getMaxContentPosition(noteId) ?: -1) + 1
+        noteDao.insertContentCrossRef(NoteContentCrossRef(noteId = noteId, historyId = historyId, position = maxPos))
+
+        noteDao.updateChangeTime(noteId, System.currentTimeMillis())
+
+        addTextIfNecessary(noteId)
     }
 
     suspend fun toggleImportance(noteId: Long) {
         if (noteId >= 0) {
-            realm.write {
-                val note = this.query(Note::class, "id == $0", noteId).first().find()
-                note?.let {
-                    it.isImportant = !it.isImportant
-                    it.changeTime = System.currentTimeMillis()
-                }
-            }
+            noteDao.toggleImportance(noteId)
+            noteDao.updateChangeTime(noteId, System.currentTimeMillis())
         }
     }
 
     suspend fun deleteNote(noteId: Long) {
-        realm.write {
-            val note = this.query(Note::class, "id == $0", noteId).first().find()
-            note?.let {
-                deleteNote(it)
+        val note = noteDao.getNoteById(noteId) ?: return
+
+        for (historyId in noteDao.getContentHistoryIds(noteId)) {
+            deleteHistoryAndComponents(noteId, historyId)
+        }
+
+        note.titleHistoryId?.let { hid ->
+            deleteHistoryAndComponents(null, hid)
+        }
+        note.coverHistoryId?.let { hid ->
+            historyDao.getComponentsSorted(hid).forEach { c ->
+                c.mediaUrl?.let { deleteFile(it) }
+                historyDao.deleteCrossRef(hid, c.id)
+                componentDao.deleteById(c.id)
             }
+            historyDao.deleteById(hid)
+        }
+
+        noteDao.deleteById(noteId)
+    }
+
+    suspend fun toggleCheckbox(component: ComponentViewData) {
+        val entity = componentDao.getById(component.id) ?: return
+        componentDao.update(entity.copy(isChecked = !entity.isChecked))
+        noteDao.updateChangeTime(component.noteId, System.currentTimeMillis())
+    }
+
+    suspend fun deleteSection(histId: Long) {
+        val noteId = noteDao.getNoteIdForHistory(histId)
+        deleteHistoryAndComponents(noteId, histId)
+        noteId?.let { noteDao.updateChangeTime(it, System.currentTimeMillis()) }
+    }
+
+    private suspend fun buildNoteViewData(entity: NoteEntity): NoteViewData {
+        val tags = noteDao.getTags(entity.id)
+
+        val title = entity.titleHistoryId?.let { hid ->
+            historyDao.getById(hid)?.let { historyMapper.map(it, historyDao.getComponentsSorted(hid)) }
+        }
+        val cover = entity.coverHistoryId?.let { hid ->
+            historyDao.getById(hid)?.let { historyMapper.map(it, historyDao.getComponentsSorted(hid)) }
+        }
+        val content = noteDao.getContentHistoryIds(entity.id).mapNotNull { hid ->
+            historyDao.getById(hid)?.let { historyMapper.map(it, historyDao.getComponentsSorted(hid)) }
+        }
+
+        return noteMapper.map(entity, tags, title, cover, content)
+    }
+
+    private suspend fun addTextIfNecessary(noteId: Long) {
+        val contentIds = noteDao.getContentHistoryIds(noteId)
+        if (contentIds.isEmpty()) return
+
+        val lastHistoryId = contentIds.last()
+        val lastComponent = historyDao.getComponentsSorted(lastHistoryId).lastOrNull()
+        val type = lastComponent?.let { ComponentType.fromValue(it.type) }
+
+        if (type == null || type != ComponentType.Text) {
+            val textComponent = ComponentEntity(id = nextId(), noteId = noteId, type = ComponentType.Text.value)
+            componentDao.insert(textComponent)
+
+            if (type == null) {
+                val nextPos = (historyDao.getMaxPosition(lastHistoryId) ?: -1) + 1
+                historyDao.insertCrossRef(HistoryComponentCrossRef(historyId = lastHistoryId, componentId = textComponent.id, position = nextPos))
+            } else {
+                val historyId = nextId()
+                historyDao.insert(HistoryEntity(id = historyId))
+                historyDao.insertCrossRef(HistoryComponentCrossRef(historyId = historyId, componentId = textComponent.id, position = 0))
+                val maxPos = (noteDao.getMaxContentPosition(noteId) ?: -1) + 1
+                noteDao.insertContentCrossRef(NoteContentCrossRef(noteId = noteId, historyId = historyId, position = maxPos))
+            }
+
+            noteDao.updateChangeTime(noteId, System.currentTimeMillis())
         }
     }
 
-    override fun close() {
-        realm.close()
-    }
+    private suspend fun deleteTextIfNecessary(noteId: Long) {
+        val contentIds = noteDao.getContentHistoryIds(noteId)
+        if (contentIds.isEmpty()) return
 
-    suspend fun toggleCheckbox(component: Component) {
-        realm.write {
-            findLatest(component)?.let { checkbox ->
-                checkbox.isChecked = !checkbox.isChecked
+        val lastHistoryId = contentIds.last()
+        val components = historyDao.getComponentsSorted(lastHistoryId)
+        val lastComponent = components.lastOrNull()
 
-                val note = this.query(Note::class, "id == $0", checkbox.noteId).first().find()
-                note?.changeTime = System.currentTimeMillis()
-            }
+        if (lastComponent != null
+            && ComponentType.fromValue(lastComponent.type) == ComponentType.Text
+            && lastComponent.content.isEmpty()
+        ) {
+            deleteHistoryAndComponents(noteId, lastHistoryId)
         }
     }
 
-    private fun deleteTextIfNecessary(realm: MutableRealm, note: Note?) {
-        val lastHistory = note?.content?.getLast()
-        lastHistory?.let { history ->
-            history.newest()?.let { last ->
-                if (last.type == ComponentType.Text && last.content.isEmpty()) {
-                    realm.deleteHistory(history)
-                }
-            }
+    private suspend fun deleteHistoryAndComponents(noteId: Long?, historyId: Long) {
+        historyDao.getComponentsSorted(historyId).forEach { c ->
+            historyDao.deleteCrossRef(historyId, c.id)
+            componentDao.deleteById(c.id)
         }
+        noteId?.let { noteDao.deleteContentCrossRef(it, historyId) }
+        historyDao.deleteById(historyId)
     }
 
-    suspend fun deleteSection(hist: History) {
-        realm.write {
-            val h = findLatest(hist)
-
-            h?.let { history ->
-                val noteId = history.newest()?.noteId
-
-                this.deleteHistory(history)
-
-                noteId?.let {
-                    val note = this.query(Note::class, "id == $0", it).first().find()
-                    note?.changeTime = System.currentTimeMillis()
-                }
-            }
-        }
+    private fun deleteFile(path: String) {
+        try { File(path).delete() } catch (_: Exception) {}
     }
 }

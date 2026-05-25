@@ -17,15 +17,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import io.writerme.app.R
-import io.writerme.app.data.model.Component
 import io.writerme.app.data.model.ComponentType
+import io.writerme.app.data.viewdata.ComponentViewData
 import io.writerme.app.ui.theme.WriterMeTheme
 import io.writerme.app.ui.theme.light
 
 @Composable
 fun NoteText(
-    component: Component,
-    onValueChange: (Component) -> Unit,
+    component: ComponentViewData,
+    onValueChange: (ComponentViewData) -> Unit,
     placeholderResource : Int = R.string.type_your_note_here,
     typography: TextStyle = MaterialTheme.typography.subtitle1,
     modifier: Modifier = Modifier
@@ -73,10 +73,9 @@ fun NoteText(
 )
 @Composable
 fun NoteTextPreview() {
-    val component = Component().apply {
-        type = ComponentType.Text
+    val component = ComponentViewData.empty(ComponentType.Text).copy(
         content = "Lorem Ipsum is simply dummy text of the printing and typesetting industry..."
-    }
+    )
 
     WriterMeTheme {
         NoteText(

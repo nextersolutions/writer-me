@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.realm)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
@@ -94,8 +93,13 @@ dependencies {
 
     implementation(libs.bundles.coil)
 
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    implementation(libs.androidx.hilt.work)
+
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.realm.base)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.skrapeit)
 

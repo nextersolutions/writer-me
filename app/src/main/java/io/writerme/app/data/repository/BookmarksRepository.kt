@@ -1,100 +1,116 @@
 package io.writerme.app.data.repository
 
-import io.realm.kotlin.Realm
-import io.writerme.app.data.model.BookmarksFolder
-import io.writerme.app.data.model.Component
+import io.writerme.app.data.dao.BookmarksFolderDao
+import io.writerme.app.data.dao.ComponentDao
+import io.writerme.app.data.mapper.BookmarksFolderMapper
+import io.writerme.app.data.mapper.ComponentMapper
+import io.writerme.app.data.model.BookmarksFolderEntity
+import io.writerme.app.data.model.ComponentEntity
 import io.writerme.app.data.model.ComponentType
-import io.writerme.app.utils.deleteBookmarkFolder
-import io.writerme.app.utils.deleteComponent
-import io.writerme.app.utils.getDefaultInstance
-import java.io.Closeable
+import io.writerme.app.data.model.FolderBookmarkCrossRef
+import io.writerme.app.data.viewdata.BookmarksFolderViewData
+import io.writerme.app.data.viewdata.ComponentViewData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class BookmarksRepository: Repository(), Closeable {
+@Singleton
+class BookmarksRepository @Inject constructor(
+    private val folderDao: BookmarksFolderDao,
+    private val componentDao: ComponentDao,
+    private val folderMapper: BookmarksFolderMapper,
+    private val componentMapper: ComponentMapper
+) : Repository() {
 
-    private val realm: Realm = Realm.getDefaultInstance()
-
-    suspend fun getMainFolder(): BookmarksFolder {
-        val result = realm.query(BookmarksFolder::class, "id == $0", 0).first().find()
-
-        return result
-            ?: realm.write {
-                val s = BookmarksFolder().apply {
-                    this.id = 0
-                }
-                copyToRealm(s)
-            }
+    companion object {
+        const val ROOT_FOLDER_ID = 0L
     }
 
-    suspend fun getLatest(folder: BookmarksFolder): BookmarksFolder? {
-        return realm.write { findLatest(folder) }
-    }
-
-    suspend fun createFolder(name: String, parent: BookmarksFolder? = null) {
-
-        realm.write {
-            val _parent = if (parent != null) {
-                findLatest(parent)
-            } else realm.query(BookmarksFolder::class, "id == $0", 0).first().find()
-
-            var folder = BookmarksFolder().apply {
-                this.id = nextId()
-                this.name = name
-            }
-
-            val latest = if (_parent != null) {
-                findLatest(_parent)
-            } else null
-
-            folder = copyToRealm(folder)
-            folder.parent = latest
-            latest?.folders?.add(folder)
-
-            folder
+    suspend fun ensureRootFolderExists() {
+        if (folderDao.getById(ROOT_FOLDER_ID) == null) {
+            folderDao.insert(
+                BookmarksFolderEntity(
+                    id = ROOT_FOLDER_ID,
+                    name = "Root",
+                    parentId = null,
+                    changeTime = System.currentTimeMillis()
+                )
+            )
         }
     }
 
-    suspend fun createBookmark(url: String, title: String, parent: BookmarksFolder? = null): Component {
+    fun observeFolder(folderId: Long): Flow<BookmarksFolderViewData> =
+        folderDao.observeById(folderId)
+            .filterNotNull()
+            .map { buildFolderViewData(it) }
 
-        return realm.write {
-            val _parent = parent ?: realm.query(BookmarksFolder::class, "id == $0", 0).first().find()
-
-            val bookmark = Component().apply {
-                this.type = ComponentType.Link
-                this.title = title
-                this.url = url
-            }
-
-            val realmObj = copyToRealm(bookmark)
-
-            _parent?.let {
-                findLatest(it)?.bookmarks?.add(realmObj)
-            }
-
-            bookmark
-        }
+    suspend fun createFolder(name: String, parentId: Long = ROOT_FOLDER_ID) {
+        folderDao.insert(
+            BookmarksFolderEntity(
+                id = nextId(),
+                name = name,
+                parentId = parentId,
+                changeTime = System.currentTimeMillis()
+            )
+        )
+        folderDao.updateChangeTime(parentId, System.currentTimeMillis())
     }
 
-    suspend fun deleteFolder(bookmarksFolder: BookmarksFolder) {
-        realm.write {
-            val latest = findLatest(bookmarksFolder)
-
-            latest?.let { folder ->
-                this.deleteBookmarkFolder(folder)
-            }
-        }
+    suspend fun createBookmark(
+        url: String,
+        title: String,
+        parentId: Long = ROOT_FOLDER_ID
+    ): ComponentViewData {
+        val bookmark = ComponentEntity(
+            id = nextId(),
+            type = ComponentType.Link.value,
+            title = title,
+            url = url
+        )
+        componentDao.insert(bookmark)
+        folderDao.insertBookmarkCrossRef(FolderBookmarkCrossRef(folderId = parentId, componentId = bookmark.id))
+        folderDao.updateChangeTime(parentId, System.currentTimeMillis())
+        return componentMapper.map(bookmark)
     }
 
-    suspend fun deleteBookmark(component: Component) {
-        realm.write {
-            val latest = findLatest(component)
-
-            latest?.let { bookmark ->
-                this.deleteComponent(bookmark)
-            }
-        }
+    suspend fun deleteFolder(folderId: Long) {
+        deleteFolderRecursive(folderId)
     }
 
-    override fun close() {
-        realm.close()
+    suspend fun deleteBookmark(componentId: Long, parentFolderId: Long) {
+        folderDao.deleteBookmarkCrossRef(parentFolderId, componentId)
+        folderDao.deleteAllCrossRefsForComponent(componentId)
+        componentDao.deleteById(componentId)
+        folderDao.updateChangeTime(parentFolderId, System.currentTimeMillis())
+    }
+
+    private suspend fun deleteFolderRecursive(folderId: Long) {
+        for (sub in folderDao.getSubfolders(folderId)) {
+            deleteFolderRecursive(sub.id)
+        }
+        for (bookmark in folderDao.getBookmarks(folderId)) {
+            componentDao.deleteById(bookmark.id)
+        }
+        folderDao.deleteById(folderId)
+    }
+
+    private suspend fun buildFolderViewData(entity: BookmarksFolderEntity): BookmarksFolderViewData {
+        val subfolders = folderDao.getSubfolders(entity.id).map { buildFolderViewData(it) }
+        val bookmarks = folderDao.getBookmarks(entity.id)
+        val path = buildPath(entity)
+        return folderMapper.map(entity, subfolders, bookmarks, path)
+    }
+
+    private suspend fun buildPath(entity: BookmarksFolderEntity): String {
+        val segments = mutableListOf<String>()
+        var current = entity
+        while (current.parentId != null) {
+            val parent = folderDao.getById(current.parentId!!) ?: break
+            segments.add(0, parent.name)
+            current = parent
+        }
+        return segments.joinToString("/")
     }
 }

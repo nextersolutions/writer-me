@@ -34,21 +34,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import io.realm.kotlin.ext.realmListOf
+import coil3.compose.AsyncImage
 import io.writerme.app.R
-import io.writerme.app.data.model.Component
 import io.writerme.app.data.model.ComponentType
-import io.writerme.app.data.model.History
-import io.writerme.app.data.model.Note
+import io.writerme.app.data.viewdata.ComponentViewData
+import io.writerme.app.data.viewdata.HistoryViewData
+import io.writerme.app.data.viewdata.NoteViewData
 import io.writerme.app.ui.theme.WriterMeTheme
 import io.writerme.app.ui.theme.lightGrey
 import io.writerme.app.utils.toDateDescription
-import java.util.Calendar
+import java.util.Date
 
 @Composable
 fun Note(
-    note: Note,
+    note: NoteViewData,
     modifier: Modifier = Modifier
 ) {
     val padding = dimensionResource(id = R.dimen.screen_padding)
@@ -64,7 +63,8 @@ fun Note(
             .shadow(dimensionResource(id = R.dimen.shadow), shape),
         backgroundColor = Color.White
     ) {
-        if (note.cover != null && note.cover!!.newest() != null) {
+        val coverComponent = note.cover?.newest()
+        if (coverComponent != null) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -72,18 +72,15 @@ fun Note(
                     .background(Color.Transparent)
             ) {
                 AsyncImage(
-                    model = note.cover!!.newest()!!.mediaUrl,
-                    contentDescription = note.cover!!.newest()!!.content,
+                    model = coverComponent.mediaUrl,
+                    contentDescription = coverComponent.content,
                     modifier = Modifier
                         .fillMaxWidth(),
                     contentScale = ContentScale.Crop
                 )
 
-                if (
-                    note.title != null
-                        && note.title!!.newest() != null
-                        && note.title!!.newest()!!.title.isNotEmpty()
-                ) {
+                val titleComponent = note.title?.newest()
+                if (titleComponent != null && titleComponent.content.isNotEmpty()) {
                     Box(modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.BottomStart)
@@ -102,21 +99,18 @@ fun Note(
                                 .fillMaxWidth()
                                 .padding(padding, 4.dp)
                         ) {
-                            note.title?.newest()?.let { component ->
-                                Text(
-                                    text = component.content,
-                                    style = MaterialTheme.typography.h5,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
+                            Text(
+                                text = titleComponent.content,
+                                style = MaterialTheme.typography.h5,
+                                modifier = Modifier.fillMaxWidth(),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
 
-                            if (note.content.isNotEmpty() && note.content[0].isNotEmpty()
-                                && note.content[0].newest()!!.type == ComponentType.Text) {
-
+                            val firstContent = note.content.firstOrNull()?.newest()
+                            if (firstContent != null && firstContent.type == ComponentType.Text) {
                                 Text(
-                                    text = note.content[0].newest()!!.content,
+                                    text = firstContent.content,
                                     style = MaterialTheme.typography.body2,
                                     modifier = Modifier.fillMaxWidth(),
                                     maxLines = 1,
@@ -166,7 +160,7 @@ fun Note(
                     LazyRow(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(note.tags) {tag ->
+                        items(note.tags) { tag ->
                             Text(
                                 text = "#$tag",
                                 style = MaterialTheme.typography.caption,
@@ -239,9 +233,9 @@ fun Note(
                                             maxLines = 1
                                         )
                                     }
-                                    
+
                                     Spacer(modifier = Modifier.width(padding))
-                                    
+
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_proceed),
                                         contentDescription = null,
@@ -249,10 +243,10 @@ fun Note(
                                 }
                             }
                             ComponentType.Link -> {
-
+                                // pending
                             }
                             ComponentType.Video -> {
-                                // pending...
+                                // pending
                             }
                             ComponentType.Image -> {
                                 Image(component = component)
@@ -268,30 +262,26 @@ fun Note(
 @Composable
 @Preview(showBackground = true)
 fun NotePreview() {
-    val calendar = Calendar.getInstance()
-    calendar.add(Calendar.HOUR, 5)
+    val titleComponent = ComponentViewData.empty(ComponentType.Text).copy(
+        content = "Instagram Content Plan"
+    )
+    val titleHistory = HistoryViewData(id = 1L, changes = listOf(titleComponent))
 
-    val titleComponent = Component().apply {
-        title = "Instagram Content Plan"
-        type = ComponentType.Text
-    }
-
-    val text = Component().apply {
+    val textComponent = ComponentViewData.empty(ComponentType.Text).copy(
         content = "I hope you enjoy it. Feel free to share your thoughts in the following section."
-        type = ComponentType.Text
-    }
+    )
+    val textHistory = HistoryViewData(id = 2L, changes = listOf(textComponent))
 
-    val note = Note().apply {
-        this.title = History(titleComponent)
-        this.content.add(History(text))
-        this.content.add(History(
-            Component(
-                this, calendar.time, "Meeting with Anna"
-            )
-        ))
-        this.isImportant = true
-        this.tags = realmListOf("project")
-    }
+    val note = NoteViewData(
+        id = 1L,
+        title = titleHistory,
+        cover = null,
+        content = listOf(textHistory),
+        isImportant = true,
+        created = Date(),
+        changeTime = System.currentTimeMillis(),
+        tags = listOf("project")
+    )
 
     WriterMeTheme {
         Note(note)

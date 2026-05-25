@@ -58,12 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.realm.kotlin.ext.realmListOf
 import io.writerme.app.R
-import io.writerme.app.data.model.Component
-import io.writerme.app.data.model.ComponentType
-import io.writerme.app.data.model.History
-import io.writerme.app.data.model.Note
 import io.writerme.app.ui.component.HomeFilterTab
 import io.writerme.app.ui.component.Note
 import io.writerme.app.ui.component.ProfileImage
@@ -75,7 +70,6 @@ import io.writerme.app.ui.theme.light
 import io.writerme.app.utils.toGreeting
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.util.Calendar
 import java.util.Date
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
@@ -398,89 +392,6 @@ fun HomeScreen(
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    val note1 = Note()
-
-    val calendar = Calendar.getInstance()
-    calendar.add(Calendar.HOUR, 5)
-
-    note1.apply {
-        this.title = History(
-            Component(note1, "Instagram Content Plan")
-        )
-        this.isImportant = true
-        this.tags = realmListOf("project")
-        this.content.addAll(
-            listOf(
-                History(
-                    Component(note1, "I hope you enjoy it. Feel free to share your thoughts in the following section...")
-                ),
-                History(
-                    Component(
-                        note1, calendar.time, "Meeting with Anna"
-                    )
-                )
-            )
-        )
-    }
-
-    val note2 = Note()
-    note2.apply {
-        this.title = History(
-            Component(note2, "Day #12: Adventure begins")
-        )
-        this.cover = History(
-            Component().apply {
-                this.noteId = note2.id
-                this.type = ComponentType.Image
-            }
-        )
-
-        this.content.add(History(
-            Component(note2, "It’s all started with a post I saw on the Instagram.")
-        ))
-    }
-
-    val note3 = Note()
-    note3.apply {
-        this.title = History(
-            Component(note3, "Day #12: Adventure begins")
-        )
-        this.cover = History(
-            Component().apply {
-                this.noteId = note3.id
-                this.type = ComponentType.Image
-            }
-        )
-
-        this.content.add(History(
-            Component(note3, "It’s all started with a post I saw on the Instagram.")
-        ))
-    }
-
-    val note4 = Note()
-    note4.apply {
-        this.title = History(
-            Component(note4, "To buy:")
-        )
-        this.tags = realmListOf("shopping")
-        this.content.addAll(
-            listOf(
-                History(
-                    Component(note4, "bread", false)
-                ),
-                History(
-                    Component(note4, "milk", false)
-                ),
-                History(
-                    Component(note4, "apples", false)
-                ),
-                History(
-                    Component(note4, "Don’t forget to buy everything from grandmas order")
-                )
-            )
-        )
-    }
-
     val main = HomeState(
         firstName = "Florian",
         chosenTab = HomeFilterTab.All,

@@ -1,72 +1,64 @@
 package io.writerme.app.data.repository
 
-import io.realm.kotlin.Realm
-import io.writerme.app.data.model.Settings
+import io.writerme.app.data.dao.SettingsDao
+import io.writerme.app.data.mapper.SettingsMapper
+import io.writerme.app.data.model.SettingsEntity
+import io.writerme.app.ui.state.SettingsState
 import io.writerme.app.utils.Const
-import io.writerme.app.utils.getDefaultInstance
-import java.io.Closeable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class SettingsRepository : Repository(), Closeable {
-    private val realm: Realm = Realm.getDefaultInstance()
+@Singleton
+class SettingsRepository @Inject constructor(
+    private val settingsDao: SettingsDao,
+    private val settingsMapper: SettingsMapper
+) : Repository() {
 
-    suspend fun getSettings(): Settings {
-        val result = realm.query(Settings::class, "id == $0", 0).first().find()
+    fun observeSettings(): Flow<SettingsState> = settingsDao.observe()
+        .filterNotNull()
+        .map { settingsMapper.mapToState(it) }
 
-        return result
-            ?: realm.write {
-                val s = Settings()
-                copyToRealm(s)
-            }
+    suspend fun getSettings(): SettingsEntity? = settingsDao.get()
+
+    suspend fun ensureSettingsExist() {
+        if (settingsDao.get() == null) {
+            settingsDao.insert(SettingsEntity())
+        }
     }
 
     suspend fun saveName(name: String) {
-        val set = getSettings()
-
-        realm.write {
-            val settings = findLatest(set)
-            settings?.fullName = name
-        }
+        val settings = settingsDao.get() ?: return
+        settingsDao.update(settings.copy(fullName = name))
     }
 
     suspend fun updateProfileImage(url: String) {
-        realm.write {
-            val settings = this.query(Settings::class, "id == $0", 0).first().find()
-            settings?.profilePictureUrl = url
-        }
-    }
-
-    suspend fun setCounter(key: String, value: Int) {
-
-        realm.write {
-            val settings = this.query(Settings::class, "id == $0", 0).first().find()
-
-            when(key) {
-                Const.MEDIA_CHANGES_HISTORY_KEY -> settings?.mediaChanges = value
-                Const.VOICE_CHANGES_HISTORY_KEY -> settings?.voiceChanges = value
-                Const.TEXT_CHANGES_HISTORY_KEY -> settings?.textChanges = value
-                Const.TASK_CHANGES_HISTORY_KEY -> settings?.taskChanges = value
-                Const.LINK_CHANGES_HISTORY_KEY -> settings?.linkChanges = value
-            }
-        }
+        val settings = settingsDao.get() ?: return
+        settingsDao.update(settings.copy(profilePictureUrl = url))
     }
 
     suspend fun setDarkMode(isDarkMode: Boolean) {
-        realm.write {
-            val settings = this.query(Settings::class, "id == $0", 0).first().find()
-
-            settings?.isDarkMode = isDarkMode
-        }
+        val settings = settingsDao.get() ?: return
+        settingsDao.update(settings.copy(isDarkMode = isDarkMode))
     }
 
     suspend fun setLanguage(language: String) {
-        realm.write {
-            val settings = this.query(Settings::class, "id == $0", 0).first().find()
-
-            settings?.currentLanguage = language
-        }
+        val settings = settingsDao.get() ?: return
+        settingsDao.update(settings.copy(currentLanguage = language))
     }
 
-    override fun close() {
-        realm.close()
+    suspend fun setCounter(key: String, value: Int) {
+        val settings = settingsDao.get() ?: return
+        val updated = when (key) {
+            Const.MEDIA_CHANGES_HISTORY_KEY -> settings.copy(mediaChanges = value)
+            Const.VOICE_CHANGES_HISTORY_KEY -> settings.copy(voiceChanges = value)
+            Const.TEXT_CHANGES_HISTORY_KEY -> settings.copy(textChanges = value)
+            Const.TASK_CHANGES_HISTORY_KEY -> settings.copy(taskChanges = value)
+            Const.LINK_CHANGES_HISTORY_KEY -> settings.copy(linkChanges = value)
+            else -> return
+        }
+        settingsDao.update(updated)
     }
 }
