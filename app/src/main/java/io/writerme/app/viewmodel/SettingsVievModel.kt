@@ -3,10 +3,14 @@ package io.writerme.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.writerme.app.data.repository.SettingsRepository
 import io.writerme.app.ui.state.SettingsState
+import io.writerme.app.usecase.settings.EnsureSettingsExistUseCase
+import io.writerme.app.usecase.settings.ObserveSettingsUseCase
+import io.writerme.app.usecase.settings.SetCounterUseCase
+import io.writerme.app.usecase.settings.SetDarkModeUseCase
+import io.writerme.app.usecase.settings.SetLanguageUseCase
+import io.writerme.app.usecase.settings.UpdateProfileImageUseCase
 import io.writerme.app.utils.Const
-import io.writerme.app.utils.FilesUtil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -16,8 +20,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val filesUtil: FilesUtil,
-    private val settingsRepository: SettingsRepository
+    private val observeSettingsUseCase: ObserveSettingsUseCase,
+    private val ensureSettingsExistUseCase: EnsureSettingsExistUseCase,
+    private val setLanguageUseCase: SetLanguageUseCase,
+    private val setDarkModeUseCase: SetDarkModeUseCase,
+    private val updateProfileImageUseCase: UpdateProfileImageUseCase,
+    private val setCounterUseCase: SetCounterUseCase,
 ) : ViewModel() {
 
     private val _settingsState: MutableStateFlow<SettingsState> =
@@ -26,10 +34,10 @@ class SettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            settingsRepository.ensureSettingsExist()
+            ensureSettingsExistUseCase()
         }
 
-        settingsRepository.observeSettings()
+        observeSettingsUseCase()
             .onEach { state ->
                 _settingsState.emit(state.copy(languages = Const.SUPPORTED_LANGUAGES))
             }
@@ -39,21 +47,20 @@ class SettingsViewModel @Inject constructor(
     fun onLanguageChange(language: String) {
         if (language in Const.SUPPORTED_LANGUAGES) {
             viewModelScope.launch {
-                settingsRepository.setLanguage(language)
+                setLanguageUseCase(language)
             }
         }
     }
 
     fun onDarkModeChange(isDarkMode: Boolean) {
         viewModelScope.launch {
-            settingsRepository.setDarkMode(isDarkMode)
+            setDarkModeUseCase(isDarkMode)
         }
     }
 
     fun updateProfileImage(url: String) {
         viewModelScope.launch {
-            val uri = filesUtil.writeImageToFile(url)
-            uri?.let { settingsRepository.updateProfileImage(it) }
+            updateProfileImageUseCase(url)
         }
     }
 
@@ -94,7 +101,7 @@ class SettingsViewModel @Inject constructor(
                 }
             }
 
-            settingsRepository.setCounter(key, value)
+            setCounterUseCase(key, value)
         }
     }
 }

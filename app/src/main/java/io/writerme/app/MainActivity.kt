@@ -22,7 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
-import io.writerme.app.data.repository.SettingsRepository
+import io.writerme.app.usecase.settings.GetSettingsUseCase
 import io.writerme.app.ui.navigation.BookmarksScreen
 import io.writerme.app.ui.navigation.GreetingScreen
 import io.writerme.app.ui.navigation.HomeScreen
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     private val tag = "MainActivity"
 
     @Inject
-    lateinit var settingsRepository: SettingsRepository
+    lateinit var getSettingsUseCase: GetSettingsUseCase
 
     private fun onLinkClicked(url: String) {
         try {
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         val startingRoute: String = runBlocking {
             withContext(Dispatchers.IO) {
-                val settings = settingsRepository.getSettings()
+                val settings = getSettingsUseCase()
                 if (settings?.fullName?.isNotEmpty() == true) HomeScreen.route
                 else GreetingScreen.route
             }

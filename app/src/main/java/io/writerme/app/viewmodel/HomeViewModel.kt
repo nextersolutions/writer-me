@@ -3,10 +3,12 @@ package io.writerme.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.writerme.app.data.repository.NoteRepository
-import io.writerme.app.data.repository.SettingsRepository
 import io.writerme.app.ui.component.HomeFilterTab
 import io.writerme.app.ui.state.HomeState
+import io.writerme.app.usecase.note.DeleteNoteUseCase
+import io.writerme.app.usecase.note.GetNotesUseCase
+import io.writerme.app.usecase.note.ToggleNoteImportanceUseCase
+import io.writerme.app.usecase.settings.ObserveSettingsUseCase
 import io.writerme.app.utils.toFirstName
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +22,10 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val notesRepository: NoteRepository,
-    private val settingsRepository: SettingsRepository
+    private val getNotesUseCase: GetNotesUseCase,
+    private val observeSettingsUseCase: ObserveSettingsUseCase,
+    private val toggleNoteImportanceUseCase: ToggleNoteImportanceUseCase,
+    private val deleteNoteUseCase: DeleteNoteUseCase,
 ) : ViewModel() {
 
     private val _homeStateFlow: MutableStateFlow<HomeState> = MutableStateFlow(HomeState())
@@ -30,7 +34,7 @@ class HomeViewModel @Inject constructor(
     private val _displayedTab = MutableStateFlow(HomeFilterTab.All)
 
     init {
-        settingsRepository.observeSettings()
+        observeSettingsUseCase()
             .onEach { settings ->
                 _homeStateFlow.emit(
                     _homeStateFlow.value.copy(
@@ -41,7 +45,7 @@ class HomeViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
-        combine(notesRepository.getNotes(), _displayedTab) { notes, tab ->
+        combine(getNotesUseCase(), _displayedTab) { notes, tab ->
             val filtered = when (tab) {
                 HomeFilterTab.All -> notes
                 HomeFilterTab.Important -> notes
@@ -62,9 +66,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun toggleImportance(noteId: Long) {
-        viewModelScope.launch {
-            notesRepository.toggleImportance(noteId)
-        }
+        viewModelScope.launch { toggleNoteImportanceUseCase(noteId) }
     }
 
     fun toggleSearchMode() {
@@ -75,9 +77,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun deleteNote(noteId: Long) {
-        viewModelScope.launch {
-            notesRepository.deleteNote(noteId)
-        }
+        viewModelScope.launch { deleteNoteUseCase(noteId) }
     }
 
     fun onTabChosen(tab: HomeFilterTab) {
