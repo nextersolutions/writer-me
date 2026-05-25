@@ -2,11 +2,15 @@ package io.writerme.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.writerme.app.data.repository.BookmarksRepository
 import io.writerme.app.ui.state.BookmarksState
-import io.writerme.app.utils.scheduleImageLoading
+import io.writerme.app.usecase.bookmarks.CreateBookmarkUseCase
+import io.writerme.app.usecase.bookmarks.CreateFolderUseCase
+import io.writerme.app.usecase.bookmarks.DeleteBookmarkUseCase
+import io.writerme.app.usecase.bookmarks.DeleteFolderUseCase
+import io.writerme.app.usecase.bookmarks.EnsureRootFolderUseCase
+import io.writerme.app.usecase.bookmarks.ObserveFolderUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,8 +23,12 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class BookmarksViewModel @Inject constructor(
-    private val workManager: WorkManager,
-    private val bookmarksRepository: BookmarksRepository
+    private val ensureRootFolderUseCase: EnsureRootFolderUseCase,
+    private val observeFolderUseCase: ObserveFolderUseCase,
+    private val createFolderUseCase: CreateFolderUseCase,
+    private val createBookmarkUseCase: CreateBookmarkUseCase,
+    private val deleteFolderUseCase: DeleteFolderUseCase,
+    private val deleteBookmarkUseCase: DeleteBookmarkUseCase,
 ) : ViewModel() {
 
     private val _bookmarksStateFlow: MutableStateFlow<BookmarksState> =
@@ -30,12 +38,10 @@ class BookmarksViewModel @Inject constructor(
     private val _currentFolderId = MutableStateFlow(BookmarksRepository.ROOT_FOLDER_ID)
 
     init {
-        viewModelScope.launch {
-            bookmarksRepository.ensureRootFolderExists()
-        }
+        viewModelScope.launch { ensureRootFolderUseCase() }
 
         _currentFolderId
-            .flatMapLatest { folderId -> bookmarksRepository.observeFolder(folderId) }
+            .flatMapLatest { folderId -> observeFolderUseCase(folderId) }
             .onEach { folder ->
                 _bookmarksStateFlow.emit(_bookmarksStateFlow.value.copy(currentFolder = folder))
             }
@@ -86,28 +92,19 @@ class BookmarksViewModel @Inject constructor(
     }
 
     fun createFolder(name: String) {
-        viewModelScope.launch {
-            bookmarksRepository.createFolder(name, _currentFolderId.value)
-        }
+        viewModelScope.launch { createFolderUseCase(name, _currentFolderId.value) }
     }
 
     fun createBookmark(url: String, title: String) {
-        viewModelScope.launch {
-            val bookmark = bookmarksRepository.createBookmark(url, title, _currentFolderId.value)
-            workManager.scheduleImageLoading(bookmark.id, _currentFolderId.value)
-        }
+        viewModelScope.launch { createBookmarkUseCase(url, title, _currentFolderId.value) }
     }
 
     fun deleteFolder(folderId: Long) {
-        viewModelScope.launch {
-            bookmarksRepository.deleteFolder(folderId)
-        }
+        viewModelScope.launch { deleteFolderUseCase(folderId) }
     }
 
     fun deleteBookmark(componentId: Long) {
-        viewModelScope.launch {
-            bookmarksRepository.deleteBookmark(componentId, _currentFolderId.value)
-        }
+        viewModelScope.launch { deleteBookmarkUseCase(componentId, _currentFolderId.value) }
     }
 
     fun toggleFolderDropdown(index: Int) {
