@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -65,6 +66,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         val startingRoute: String = runBlocking {
@@ -216,7 +218,14 @@ class MainActivity : AppCompatActivity() {
                                     onTermsClick = { onLinkClicked(Const.TERMS_LINK) },
                                     onCounterChange = settingsViewModel::onCounterChange,
                                     updateProfileImage = settingsViewModel::updateProfileImage,
-                                    dismissScreen = { navController.popBackStack() }
+                                    dismissScreen = { navController.popBackStack() },
+                                    showExportSheet = settingsViewModel::showExportSheet,
+                                    hideExportSheet = settingsViewModel::hideExportSheet,
+                                    toggleExportNotes = settingsViewModel::toggleExportNotes,
+                                    toggleExportBookmarks = settingsViewModel::toggleExportBookmarks,
+                                    exportData = settingsViewModel::exportData,
+                                    importData = settingsViewModel::importData,
+                                    clearDataIoMessage = settingsViewModel::clearDataIoMessage
                                 )
                             }
                         }

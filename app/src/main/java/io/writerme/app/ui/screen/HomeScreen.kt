@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -109,7 +111,7 @@ fun HomeScreen(
                 TopAppBar(
                     backgroundColor = Color.Transparent,
                     elevation = 0.dp,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.statusBarsPadding(),
                     title = {
                         Text(
                             text = stringResource(id = R.string.app_name),
@@ -144,7 +146,9 @@ fun HomeScreen(
             floatingActionButtonPosition = FabPosition.Center,
             bottomBar = {
                 BottomAppBar(
-                    modifier = Modifier.clip(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .clip(
                             RoundedCornerShape(
                                 dimensionResource(id = R.dimen.big_radius)
                             )

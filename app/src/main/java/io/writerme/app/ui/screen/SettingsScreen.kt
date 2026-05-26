@@ -1,6 +1,7 @@
 package io.writerme.app.ui.screen
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -15,14 +16,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
@@ -32,11 +36,14 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Snackbar
+import androidx.compose.material.SnackbarHost
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,11 +63,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.writerme.app.R
+import io.writerme.app.ui.component.ExportBottomSheet
 import io.writerme.app.ui.component.ProfileImage
 import io.writerme.app.ui.component.SettingsCounterRow
 import io.writerme.app.ui.component.SettingsSectionTitle
 import io.writerme.app.ui.state.SettingsState
-import io.writerme.app.ui.theme.*
+import io.writerme.app.ui.theme.WriterMeTheme
+import io.writerme.app.ui.theme.cardBackground
+import io.writerme.app.ui.theme.light
+import io.writerme.app.ui.theme.strokeLight
 import io.writerme.app.utils.Const
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -76,22 +87,50 @@ fun SettingsScreen(
     onTermsClick: () -> Unit,
     onCounterChange: (String, Boolean) -> Unit,
     updateProfileImage: (String) -> Unit,
-    dismissScreen: () -> Unit
+    dismissScreen: () -> Unit,
+    showExportSheet: () -> Unit,
+    hideExportSheet: () -> Unit,
+    toggleExportNotes: () -> Unit,
+    toggleExportBookmarks: () -> Unit,
+    exportData: (Uri) -> Unit,
+    importData: (Uri) -> Unit,
+    clearDataIoMessage: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val scaffoldState = rememberScaffoldState()
     val state = uiState.collectAsStateWithLifecycle()
 
+    // Show snackbar when a data I/O message arrives
+    LaunchedEffect(state.value.dataIoMessage) {
+        state.value.dataIoMessage?.let { msg ->
+            scaffoldState.snackbarHostState.showSnackbar(msg)
+            clearDataIoMessage()
+        }
+    }
+
     val updateProfileImagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> uri?.let { updateProfileImage(it.toString()) } }
+    )
+
+    // File picker for import
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri -> uri?.let { importData(it) } }
+    )
+
+    // Document creator for export (user picks save location)
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json"),
         onResult = { uri ->
-            uri?.let { updateProfileImage(it.toString()) }
+            uri?.let {
+                exportData(it)
+                hideExportSheet()
+            }
         }
     )
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.background_main),
             contentScale = ContentScale.Crop,
@@ -103,10 +142,20 @@ fun SettingsScreen(
             scaffoldState = scaffoldState,
             backgroundColor = Color.Transparent,
             modifier = Modifier.fillMaxSize(),
+            snackbarHost = { host ->
+                SnackbarHost(host) { data ->
+                    Snackbar(
+                        snackbarData = data,
+                        backgroundColor = MaterialTheme.colors.cardBackground,
+                        contentColor = MaterialTheme.colors.light
+                    )
+                }
+            },
             topBar = {
                 TopAppBar(
                     backgroundColor = Color.Transparent,
                     elevation = 0.dp,
+                    modifier = Modifier.statusBarsPadding(),
                     title = {
                         Text(
                             text = stringResource(id = R.string.settings),
@@ -132,10 +181,12 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
+                    .navigationBarsPadding()
             ) {
                 val screenPadding = dimensionResource(id = R.dimen.screen_padding)
 
-                Row (
+                // ── Profile row ───────────────────────────────────────────
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(screenPadding),
@@ -151,12 +202,10 @@ fun SettingsScreen(
                             IconButton(
                                 modifier = Modifier
                                     .clip(shape)
-                                    .background(MaterialTheme.colors.backgroundGrey)
+                                    .background(MaterialTheme.colors.cardBackground)
                                     .padding(4.dp, 12.dp)
                                     .shadow(dimensionResource(id = R.dimen.shadow), shape),
-                                onClick = {
-                                    updateProfileImagePicker.launch("image/*")
-                                }
+                                onClick = { updateProfileImagePicker.launch("image/*") }
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_camera),
@@ -178,7 +227,6 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.h1,
                             color = MaterialTheme.colors.light
                         )
-
                         Text(
                             text = state.value.email,
                             style = MaterialTheme.typography.body1,
@@ -188,8 +236,7 @@ fun SettingsScreen(
                     }
                 }
 
-                // TODO: add the dialog to edit email, photo and the full name
-
+                // ── Changes History card ──────────────────────────────────
                 Card(
                     modifier = Modifier.padding(screenPadding, 8.dp),
                     shape = RoundedCornerShape(25.dp),
@@ -221,50 +268,140 @@ fun SettingsScreen(
                             value = state.value.textChanges,
                             increaseValueId = R.string.increase_number_of_text_changes,
                             decreaseValueId = R.string.decrease_number_of_text_changes,
-                            onChange = {
-                                onCounterChange(Const.TEXT_CHANGES_HISTORY_KEY, it)
-                            })
-
+                            onChange = { onCounterChange(Const.TEXT_CHANGES_HISTORY_KEY, it) }
+                        )
                         SettingsCounterRow(
                             stringId = R.string.number_of_voice_changes,
                             value = state.value.voiceChanges,
                             increaseValueId = R.string.increase_number_of_voice_changes,
                             decreaseValueId = R.string.decrease_number_of_voice_changes,
-                            onChange = {
-                                onCounterChange(Const.VOICE_CHANGES_HISTORY_KEY, it)
-                            })
-
+                            onChange = { onCounterChange(Const.VOICE_CHANGES_HISTORY_KEY, it) }
+                        )
                         SettingsCounterRow(
                             stringId = R.string.number_of_tasks_changes,
                             value = state.value.taskChanges,
                             increaseValueId = R.string.increase_number_of_tasks_changes,
                             decreaseValueId = R.string.decrease_number_of_tasks_changes,
-                            onChange = {
-                                onCounterChange(Const.TASK_CHANGES_HISTORY_KEY, it)
-                            })
-
+                            onChange = { onCounterChange(Const.TASK_CHANGES_HISTORY_KEY, it) }
+                        )
                         SettingsCounterRow(
                             stringId = R.string.number_of_media_changes,
                             value = state.value.mediaChanges,
                             increaseValueId = R.string.increase_number_of_media_changes,
                             decreaseValueId = R.string.decrease_number_of_media_changes,
-                            onChange = {
-                                onCounterChange(Const.MEDIA_CHANGES_HISTORY_KEY, it)
-                            })
-
+                            onChange = { onCounterChange(Const.MEDIA_CHANGES_HISTORY_KEY, it) }
+                        )
                         SettingsCounterRow(
                             stringId = R.string.number_of_link_changes,
                             value = state.value.linkChanges,
                             increaseValueId = R.string.increase_number_of_link_changes,
                             decreaseValueId = R.string.decrease_number_of_link_changes,
-                            onChange = {
-                                onCounterChange(Const.LINK_CHANGES_HISTORY_KEY, it)
-                            })
+                            onChange = { onCounterChange(Const.LINK_CHANGES_HISTORY_KEY, it) }
+                        )
 
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
 
+                // ── Export & Import card ──────────────────────────────────
+                Card(
+                    modifier = Modifier.padding(screenPadding, 8.dp),
+                    shape = RoundedCornerShape(25.dp),
+                    elevation = 20.dp,
+                    backgroundColor = MaterialTheme.colors.cardBackground
+                ) {
+                    Column {
+                        SettingsSectionTitle(
+                            titleRes = R.string.export_import,
+                            iconRes = R.drawable.ic_history
+                        )
+
+                        Divider(
+                            modifier = Modifier.padding(screenPadding, 0.dp, screenPadding, screenPadding),
+                            color = MaterialTheme.colors.strokeLight
+                        )
+
+                        Text(
+                            text = stringResource(id = R.string.export_import_description),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(screenPadding, 0.dp, screenPadding, 16.dp),
+                            style = MaterialTheme.typography.body2,
+                            color = MaterialTheme.colors.light
+                        )
+
+                        // Export row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { showExportSheet() }
+                                .padding(screenPadding, 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.export),
+                                style = MaterialTheme.typography.body1,
+                                color = MaterialTheme.colors.light
+                            )
+                            if (state.value.isExporting) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colors.light
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_history),
+                                    contentDescription = stringResource(id = R.string.export),
+                                    tint = MaterialTheme.colors.light,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+
+                        Divider(
+                            modifier = Modifier.padding(screenPadding, 0.dp),
+                            color = MaterialTheme.colors.strokeLight
+                        )
+
+                        // Import row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    importLauncher.launch(arrayOf("application/json", "text/plain"))
+                                }
+                                .padding(screenPadding, 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.import_data),
+                                style = MaterialTheme.typography.body1,
+                                color = MaterialTheme.colors.light
+                            )
+                            if (state.value.isImporting) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colors.light
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_history),
+                                    contentDescription = stringResource(id = R.string.import_data),
+                                    tint = MaterialTheme.colors.light,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+
+                // ── Appearance card ───────────────────────────────────────
                 Card(
                     shape = shape,
                     modifier = Modifier
@@ -273,9 +410,9 @@ fun SettingsScreen(
                     backgroundColor = Color.Transparent
                 ) {
                     Box(
-                       modifier = Modifier
-                           .fillMaxWidth()
-                           .wrapContentHeight()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
                     ) {
                         Box(
                             modifier = Modifier
@@ -285,9 +422,7 @@ fun SettingsScreen(
                         )
 
                         Column {
-                            SettingsSectionTitle(
-                                titleRes = R.string.appearance
-                            )
+                            SettingsSectionTitle(titleRes = R.string.appearance)
 
                             Divider(
                                 modifier = Modifier.padding(screenPadding, 0.dp, screenPadding, screenPadding),
@@ -307,9 +442,7 @@ fun SettingsScreen(
                                     color = MaterialTheme.colors.light
                                 )
 
-                                var isLanguagesListExpanded by remember {
-                                    mutableStateOf(false)
-                                }
+                                var isLanguagesListExpanded by remember { mutableStateOf(false) }
 
                                 ExposedDropdownMenuBox(
                                     expanded = isLanguagesListExpanded,
@@ -324,16 +457,13 @@ fun SettingsScreen(
                                         onValueChange = onLanguageChange,
                                         readOnly = true,
                                         trailingIcon = {
-                                            ExposedDropdownMenuDefaults.TrailingIcon(
-                                                expanded = isLanguagesListExpanded
-                                            )
+                                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isLanguagesListExpanded)
                                         },
                                         colors = ExposedDropdownMenuDefaults.textFieldColors(
                                             focusedIndicatorColor = Color.Transparent,
                                             unfocusedIndicatorColor = Color.Transparent,
                                             backgroundColor = MaterialTheme.colors.light,
-
-                                            ),
+                                        ),
                                         shape = RoundedCornerShape(radius),
                                         textStyle = MaterialTheme.typography.body2
                                     )
@@ -349,14 +479,14 @@ fun SettingsScreen(
                                             expanded = isLanguagesListExpanded,
                                             onDismissRequest = { isLanguagesListExpanded = false }
                                         ) {
-                                            state.value.languages.forEach { selectedOption ->
+                                            state.value.languages.forEach { option ->
                                                 DropdownMenuItem(onClick = {
-                                                    onLanguageChange(selectedOption)
+                                                    onLanguageChange(option)
                                                     isLanguagesListExpanded = false
                                                 }) {
                                                     Text(
-                                                        text = selectedOption,
-                                                        style  = MaterialTheme.typography.body2
+                                                        text = option,
+                                                        style = MaterialTheme.typography.body2
                                                     )
                                                 }
                                             }
@@ -364,33 +494,11 @@ fun SettingsScreen(
                                     }
                                 }
                             }
-
-
-                            /*Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(screenPadding, 8.dp)
-                                    .clickable {
-
-                                    },
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.dark_mode),
-                                    style = MaterialTheme.typography.body1,
-                                    color = MaterialTheme.colors.light
-                                )
-
-                                Switch(
-                                    checked = state.value.isDarkMode,
-                                    onCheckedChange = { onDarkModeChange(it) }
-                                )
-                            }*/
                         }
                     }
                 }
 
+                // ── Help card ─────────────────────────────────────────────
                 Card(
                     modifier = Modifier.padding(screenPadding, 8.dp),
                     shape = RoundedCornerShape(25.dp),
@@ -421,7 +529,6 @@ fun SettingsScreen(
                                 style = MaterialTheme.typography.body1,
                                 color = MaterialTheme.colors.light
                             )
-
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_globe),
                                 contentDescription = stringResource(id = R.string.globe_icon),
@@ -430,7 +537,6 @@ fun SettingsScreen(
                         }
                     }
                 }
-
 
                 val text = stringResource(id = R.string.copyright)
                 val year = Calendar.getInstance().get(Calendar.YEAR)
@@ -446,6 +552,21 @@ fun SettingsScreen(
                 )
             }
         }
+
+        // ── Export bottom sheet overlay ───────────────────────────────────
+        ExportBottomSheet(
+            visible = state.value.isExportSheetVisible,
+            exportNotes = state.value.exportNotes,
+            exportBookmarks = state.value.exportBookmarks,
+            isExporting = state.value.isExporting,
+            onToggleNotes = toggleExportNotes,
+            onToggleBookmarks = toggleExportBookmarks,
+            onConfirm = {
+                val fileName = "writerme_export_${System.currentTimeMillis()}.json"
+                exportLauncher.launch(fileName)
+            },
+            onDismiss = hideExportSheet
+        )
     }
 }
 
@@ -460,11 +581,11 @@ fun SettingsScreenPreview() {
         languages = listOf("English", "Deutsch", "Українська"),
     )
 
-
     WriterMeTheme {
         SettingsScreen(
             MutableStateFlow(state),
-            {}, {}, {}, {_, _, ->}, {}, {}
+            {}, {}, {}, { _, _ -> }, {}, {},
+            {}, {}, {}, {}, {}, {}, {}
         )
     }
 }
