@@ -79,6 +79,30 @@ class BookmarksRepository @Inject constructor(
         deleteFolderRecursive(folderId)
     }
 
+    suspend fun exportRootFolder(): BookmarksFolderViewData {
+        val root = folderDao.getById(ROOT_FOLDER_ID) ?: return BookmarksFolderViewData.empty()
+        return buildFolderViewData(root)
+    }
+
+    suspend fun importFolder(folder: BookmarksFolderViewData, parentId: Long?) {
+        folderDao.insert(
+            BookmarksFolderEntity(
+                id = folder.id,
+                name = folder.name,
+                parentId = parentId,
+                changeTime = folder.changeTime
+            )
+        )
+        folder.bookmarks.forEach { bookmark ->
+            val entity = componentMapper.mapToEntity(bookmark)
+            componentDao.insert(entity)
+            folderDao.insertBookmarkCrossRef(
+                FolderBookmarkCrossRef(folderId = folder.id, componentId = entity.id)
+            )
+        }
+        folder.folders.forEach { subfolder -> importFolder(subfolder, folder.id) }
+    }
+
     suspend fun deleteBookmark(componentId: Long, parentFolderId: Long) {
         folderDao.deleteBookmarkCrossRef(parentFolderId, componentId)
         folderDao.deleteAllCrossRefsForComponent(componentId)
