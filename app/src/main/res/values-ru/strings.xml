@@ -102,4 +102,16 @@
     <string name="decrease_number_of_media_changes">Уменьшить количество изменений носителя</string>
     <string name="increase_number_of_link_changes">Увеличить количество изменений ссылок</string>
     <string name="decrease_number_of_link_changes">Уменьшить количество изменений ссылок</string>
+
+    <string name="notes">Заметки</string>
+    <string name="export">Экспорт</string>
+    <string name="export_description">Выберите, что включить в экспортируемый JSON-файл. Весь журнал изменений сохраняется.</string>
+    <string name="export_import">Экспорт &amp; Импорт</string>
+    <string name="export_import_description">Создайте резервную копию заметок и закладок или восстановите их из ранее экспортированного файла.</string>
+    <string name="import_data">Импорт</string>
+    <string name="import_description">Выберите ранее экспортированный JSON-файл WriterMe для восстановления данных.</string>
+    <string name="export_success">Экспорт выполнен успешно</string>
+    <string name="export_failed">Ошибка экспорта</string>
+    <string name="import_success">Импорт выполнен успешно</string>
+    <string name="import_failed">Ошибка импорта — недействительный или повреждённый файл</string>
 </resources>

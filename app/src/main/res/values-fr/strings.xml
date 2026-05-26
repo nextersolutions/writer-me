@@ -102,4 +102,16 @@
     <string name="decrease_number_of_media_changes">Diminuer le nombre de changements de médias</string>
     <string name="increase_number_of_link_changes">Augmenter le nombre de changements de liens</string>
     <string name="decrease_number_of_link_changes">Diminuer le nombre de changements de liens</string>
+
+    <string name="notes">Notes</string>
+    <string name="export">Exporter</string>
+    <string name="export_description">Choisissez ce qui sera inclus dans le fichier JSON exporté. Tout l\'historique des modifications est conservé.</string>
+    <string name="export_import">Exporter &amp; Importer</string>
+    <string name="export_import_description">Sauvegardez vos notes et signets, ou restaurez-les à partir d\'un fichier précédemment exporté.</string>
+    <string name="import_data">Importer</string>
+    <string name="import_description">Sélectionnez un fichier JSON WriterMe précédemment exporté pour restaurer les données.</string>
+    <string name="export_success">Exportation réussie</string>
+    <string name="export_failed">Échec de l\'exportation</string>
+    <string name="import_success">Importation réussie</string>
+    <string name="import_failed">Échec de l\'importation — fichier invalide ou corrompu</string>
 </resources>

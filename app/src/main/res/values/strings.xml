@@ -107,4 +107,16 @@
     <string name="decrease_number_of_media_changes">Decrease number of media changes</string>
     <string name="increase_number_of_link_changes">Increase number of link changes</string>
     <string name="decrease_number_of_link_changes">Decrease number of link changes</string>
+
+    <string name="notes">Notes</string>
+    <string name="export">Export</string>
+    <string name="export_description">Select what to include in the exported JSON file. All change history is preserved.</string>
+    <string name="export_import">Export &amp; Import</string>
+    <string name="export_import_description">Back up your notes and bookmarks, or restore them from a previously exported file.</string>
+    <string name="import_data">Import</string>
+    <string name="import_description">Select a previously exported WriterMe JSON file to restore data.</string>
+    <string name="export_success">Export successful</string>
+    <string name="export_failed">Export failed</string>
+    <string name="import_success">Import successful</string>
+    <string name="import_failed">Import failed — invalid or corrupted file</string>
 </resources>
