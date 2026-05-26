@@ -150,11 +150,25 @@ class NoteViewModel @Inject constructor(
     }
 
     fun showDropdown(index: Int) {
-        viewModelScope.launch { _noteState.emit(_noteState.value.copy(expandedDropdownId = index)) }
+        viewModelScope.launch {
+            _noteState.emit(
+                _noteState.value.copy(
+                    expandedDropdownId = index,
+                    isDropDownInHistoryMode = false
+                )
+            )
+        }
     }
 
     fun dismissDropDown() {
-        viewModelScope.launch { _noteState.emit(_noteState.value.copy(expandedDropdownId = -1)) }
+        viewModelScope.launch {
+            _noteState.emit(
+                _noteState.value.copy(
+                    expandedDropdownId = -1,
+                    isDropDownInHistoryMode = false
+                )
+            )
+        }
     }
 
     fun toggleDropDownHistoryMode() {

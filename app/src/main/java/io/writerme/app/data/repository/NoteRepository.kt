@@ -12,6 +12,8 @@ import io.writerme.app.data.model.HistoryComponentCrossRef
 import io.writerme.app.data.model.HistoryEntity
 import io.writerme.app.data.model.NoteContentCrossRef
 import io.writerme.app.data.model.NoteEntity
+import io.writerme.app.data.model.NoteTagEntity
+import io.writerme.app.data.viewdata.HistoryViewData
 import io.writerme.app.data.viewdata.ComponentViewData
 import io.writerme.app.data.viewdata.NoteViewData
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +35,13 @@ class NoteRepository @Inject constructor(
 
     fun getNotes(): Flow<List<NoteViewData>> = noteDao.getAllNotes()
         .map { entities -> entities.map { buildNoteViewData(it) } }
+
+    suspend fun getAllNotesSync(): List<NoteViewData> =
+        noteDao.getAllNotesList().map { buildNoteViewData(it) }
+
+    suspend fun importNotes(notes: List<NoteViewData>) {
+        for (note in notes) importNote(note)
+    }
 
     fun getNote(noteId: Long): Flow<NoteViewData> = noteDao.getNoteByIdFlow(noteId)
         .filterNotNull()
@@ -217,6 +226,44 @@ class NoteRepository @Inject constructor(
         val noteId = noteDao.getNoteIdForHistory(histId)
         deleteHistoryAndComponents(noteId, histId)
         noteId?.let { noteDao.updateChangeTime(it, System.currentTimeMillis()) }
+    }
+
+    private suspend fun importNote(note: NoteViewData) {
+        val noteEntity = NoteEntity(
+            id = note.id,
+            titleHistoryId = note.title?.id,
+            coverHistoryId = note.cover?.id,
+            isImportant = note.isImportant,
+            created = note.created.time,
+            changeTime = note.changeTime
+        )
+        noteDao.insert(noteEntity)
+        note.tags.forEach { tag ->
+            noteDao.insertTag(NoteTagEntity(noteId = note.id, tag = tag))
+        }
+        note.title?.let { importHistory(it) }
+        note.cover?.let { importHistory(it) }
+        note.content.forEachIndexed { index, history ->
+            importHistory(history)
+            noteDao.insertContentCrossRef(
+                NoteContentCrossRef(noteId = note.id, historyId = history.id, position = index)
+            )
+        }
+    }
+
+    private suspend fun importHistory(history: HistoryViewData) {
+        historyDao.insert(HistoryEntity(id = history.id))
+        history.changes.forEachIndexed { index, component ->
+            val entity = componentMapper.mapToEntity(component)
+            componentDao.insert(entity)
+            historyDao.insertCrossRef(
+                HistoryComponentCrossRef(
+                    historyId = history.id,
+                    componentId = entity.id,
+                    position = index
+                )
+            )
+        }
     }
 
     private suspend fun buildNoteViewData(entity: NoteEntity): NoteViewData {
