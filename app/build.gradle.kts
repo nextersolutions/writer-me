@@ -8,14 +8,14 @@ plugins {
 
 android {
     namespace = "io.writerme.app"
-    compileSdk = 37
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "io.writerme.app"
-        minSdk = 24
-        targetSdk = 37
-        versionCode = 7
-        versionName = "1.1.1"
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = libs.versions.versionCode.get().toInt()
+        versionName = libs.versions.versionName.get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
